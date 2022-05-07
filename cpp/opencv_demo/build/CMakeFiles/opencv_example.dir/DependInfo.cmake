@@ -4,13 +4,13 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/Users/runge.liu/Documents/code/studyML/cpp/opencv_demo/main.cpp" "/Users/runge.liu/Documents/code/studyML/cpp/opencv_demo/build/CMakeFiles/opencv_example.dir/main.cpp.o"
+  "/root/studyML/cpp/opencv_demo/main.cpp" "/root/studyML/cpp/opencv_demo/build/CMakeFiles/opencv_example.dir/main.cpp.o"
   )
-set(CMAKE_CXX_COMPILER_ID "AppleClang")
+set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/usr/local/include/opencv4"
+  "/usr/include/opencv"
   )
 
 # Targets to which this target links.

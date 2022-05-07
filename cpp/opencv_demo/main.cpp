@@ -16,9 +16,9 @@ int main(int argc, const char * argv[]) {
     image = imread( path, 1 );
 
 
-
-    imshow( "Display Image", image );
-    waitKey(0);
+    cv::imwrite("demo.jpg", image);
+    // imshow( "Display Image", image );
+    // waitKey(0);
 
     return 0;
 }
