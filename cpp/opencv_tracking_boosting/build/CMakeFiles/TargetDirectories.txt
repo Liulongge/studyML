@@ -1,0 +1,3 @@
+/Users/runge.liu/Documents/code/studyML/cpp/opencv_tracking_goturn/build/CMakeFiles/rebuild_cache.dir
+/Users/runge.liu/Documents/code/studyML/cpp/opencv_tracking_goturn/build/CMakeFiles/edit_cache.dir
+/Users/runge.liu/Documents/code/studyML/cpp/opencv_tracking_goturn/build/CMakeFiles/demo.dir
