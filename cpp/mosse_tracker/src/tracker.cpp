@@ -23,6 +23,7 @@ cv::Mat mosseTracker::createGaussKernel(cv::Size sz, float sigma, cv::Point cent
 			v /= (2 * sigma);
 			gauss.at<float>(r, c) = std::exp(-v);
 		}
+
 	return gauss;
 }
 
@@ -55,6 +56,7 @@ cv::Mat mosseTracker::fft(cv::Mat image, bool backwards)
 	{
 		cv::Mat planes[] = {cv::Mat_<float>(image), cv::Mat_<float>::zeros(image.size())};
 		cv::merge(planes, 2, image);
+		
 	}
 	cv::dft(image, image, backwards ? (cv::DFT_INVERSE | cv::DFT_SCALE) : 0);
 
@@ -69,6 +71,7 @@ cv::Mat mosseTracker::conj(const cv::Mat& image)
 	mat[1] *= -1;
 	cv::Mat res;
 	cv::merge(mat, 2, res);
+
 	return res;
 }
 
@@ -83,6 +86,7 @@ cv::Mat mosseTracker::createHanningMats(int rows, int cols)
 		hann2t.at<float>(i, 0) = 0.5 * (1 - std::cos(2 * CV_PI * i / (hann2t.rows - 1)));
 
 	cv::Mat hann2d = hann2t * hann1t;
+	cv::imshow("hann2d", hann2d);
 	return hann2d;
 }
 
@@ -91,8 +95,10 @@ cv::Mat mosseTracker::preprocess(const cv::Mat& image)
 	cv::Mat win = createHanningMats(image.rows, image.cols);
 	float eps = 1e-5;
 	cv::Mat img = image + cv::Scalar::all(1);
+	cv::imshow("img", img);
 	img = cv::Mat_<float>(img);
 	cv::log(img, img);
+	cv::imshow("log_img", img);
 	cv::Scalar mean, std;
 	cv::meanStdDev(img, mean, std);
 	img = (img - cv::Scalar::all(mean[0])) / (std[0] + eps);
@@ -114,7 +120,8 @@ cv::Mat mosseTracker::rand_warp(const cv::Mat& image)
 	cv::Point center = cv::Point(image.cols/2, image.rows/2);
 	cv::Mat rot_mat = cv::getRotationMatrix2D(center, double(r), double(scale));
 	cv::warpAffine(image, rotate_image, rot_mat, image.size());
-
+	cv::imshow("rotate_image", rotate_image);
+	// cv::waitKey(0);
 	return rotate_image;
 }
 
@@ -143,12 +150,13 @@ void mosseTracker::init(cv::Rect roi, const cv::Mat& image)
 	cv::Point center = cv::Point(roi.x+roi.width/2, roi.y+roi.height/2);
 
 	guassKernelMatrix = createGaussKernel(image.size(), _sigma, center);
-
+	cv::imshow("gauss", guassKernelMatrix);
 	cv::Mat gray = bgr2gray(image);
 
 	cv::Mat gray_crop = imcrop(roi, gray);
-
+	cv::imshow("gray_crop", gray_crop);
 	cv::Mat guassKernelMatrix_crop = imcrop(roi, guassKernelMatrix);
+	cv::imshow("guassKernelMatrix_crop", guassKernelMatrix_crop);
 
 	init_sz.width = guassKernelMatrix_crop.cols;
 	init_sz.height = guassKernelMatrix_crop.rows;
@@ -159,7 +167,7 @@ void mosseTracker::init(cv::Rect roi, const cv::Mat& image)
 		cv::resize(gray_crop, gray_crop, guassKernelMatrix_crop.size());
 
 	fi = preprocess(gray_crop);
-
+	cv::imshow("fi", fi);
 	fi_fft = fft(fi);
 
 	Ai = complexMultiplication(gauss_fft, conj(fi_fft));
@@ -176,6 +184,7 @@ void mosseTracker::init(cv::Rect roi, const cv::Mat& image)
 
 	Ai *= _eta;
 	Bi *= _eta;
+	cv::waitKey(0);
 }
 
 cv::Mat mosseTracker::convert(const cv::Mat& src)
@@ -188,13 +197,16 @@ cv::Mat mosseTracker::convert(const cv::Mat& src)
 			val = val > 255 ? 255 : val;
 			cv8uc1.at<uchar>(r,c) = (unsigned char)val;
 		}
+	cv::imshow("cv8uc1", cv8uc1);
+	cv::waitKey(0);
 	return cv8uc1;
 }
 
 cv::Mat mosseTracker::real(cv::Mat image)
 {
 	std::vector<cv::Mat> mats;
-	cv::split(image, mats);
+	cv::split(image, mats);  	//split(待分离的Mat型多通道矩阵（二维）,填分离后的Mat型单通道数组（三维）或一个vector<Mat>对象);
+								//split(image, mv);          //(输入图片，mat对象)
 	return mats[0];
 }
 
@@ -234,19 +246,20 @@ cv::Rect mosseTracker::update(const cv::Mat& image)
 	//cv::resize(_roi, gray);
 	cv::resize(fi, fi, init_sz);
 	fi = preprocess(fi);
-
+	cv::imshow("update", fi);
 	cv::Mat response = fft(complexMultiplication(Hi, fft(fi)), true);
 
-	cv::normalize(response, response, 0, 1, cv::NORM_MINMAX);
+	cv::normalize(response, response, 0, 1, cv::NORM_MINMAX); // 归一化操作
 
 	response *= 255.0;
 
-	cv::Mat resp = real(response);
+	cv::Mat resp = real(response);  // 通道分离，选取第一个通道
+	cv::imshow("resp", resp);
 	cv::Mat resp_cv8u = cv::Mat_<unsigned char>(resp);
-
+	cv::imshow("resp_cv8u", resp_cv8u);
 	cv::Point ps;
 	double max_response;
-	cv::minMaxLoc(resp_cv8u, NULL, &max_response, NULL, &ps);
+	cv::minMaxLoc(resp_cv8u, NULL, &max_response, NULL, &ps); // 找出图像中最小值最大值
 
 	float dx = ps.x - init_sz.width / 2;
 	float dy = ps.y - init_sz.height / 2;
@@ -254,7 +267,7 @@ cv::Rect mosseTracker::update(const cv::Mat& image)
 	_roi = cv::Rect(_roi.x + dx, _roi.y + dy, init_sz.width, init_sz.height);
 
 	train(gray);
-
+	cv::waitKey(0);
 	return _roi;
 }
 
@@ -263,8 +276,10 @@ void mosseTracker::train(const cv::Mat& image)
 	fi = imcrop(_roi, image);
 	cv::resize(fi, fi, init_sz);
 	fi = preprocess(fi);
-
+	cv::imshow("fi", fi);
 	fi_fft = fft(fi);
+	
+
 	Ai = _eta * complexMultiplication(gauss_fft, conj(fi_fft)) + (1 - _eta) * Ai;
 	Bi = _eta * complexMultiplication(fi_fft, conj(fi_fft)) + (1 - _eta) * Bi;
 }
