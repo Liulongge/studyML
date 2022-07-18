@@ -1,3 +1,0 @@
-/root/studyML/cpp/opencv_demo/build/CMakeFiles/rebuild_cache.dir
-/root/studyML/cpp/opencv_demo/build/CMakeFiles/opencv_example.dir
-/root/studyML/cpp/opencv_demo/build/CMakeFiles/edit_cache.dir

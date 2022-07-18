@@ -1,3 +1,0 @@
-/root/studyML/cpp/opencv_function/image_rotate/build/CMakeFiles/rebuild_cache.dir
-/root/studyML/cpp/opencv_function/image_rotate/build/CMakeFiles/opencv_example.dir
-/root/studyML/cpp/opencv_function/image_rotate/build/CMakeFiles/edit_cache.dir
