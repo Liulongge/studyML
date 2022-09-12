@@ -13,6 +13,13 @@ data_transform = transforms.Compose(
 # load image
 path = "./img/"
 file_list = os.listdir(path)
+model = ResNet18()
+# load model weights
+model_weight_path = "./net_020.pth"
+model.load_state_dict(torch.load(model_weight_path, map_location=device))#载入训练好的模型参数
+torch.save(model, "my_model.pth")  # 保存整个模型
+model.eval()#使用eval()模式
+class_indict = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 for file in file_list :
     print(file)
     img = Image.open(path + file)
@@ -21,13 +28,7 @@ for file in file_list :
     img = data_transform(img)
     # expand batch dimension
     img = torch.unsqueeze(img, dim=0)
-    class_indict = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-    model = ResNet18()
-    # load model weights
-    model_weight_path = "./net_007.pth"
-    model.load_state_dict(torch.load(model_weight_path, map_location=device))#载入训练好的模型参数
-    model.eval()#使用eval()模式
     with torch.no_grad():#不跟踪损失梯度
         # predict class
         output = model(img)
