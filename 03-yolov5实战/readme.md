@@ -43,4 +43,29 @@
         每秒帧数FPS(Frame Per Second)
         浮点运算量(FLOPS)
 
-
+## 检测milestones
+![检测milestones](./doc/detection_milestones.jpg)
+![one-stage与two-stage](./doc/one-stage与two-stage.jpg)
+![one-stage与two-stage2](./doc/one-stage与two-stage2.jpg)
+        
+        检测：
+        input -> backbone -> neck -> head(dense prediction/sparse prediction)
+        One-stage: YOLO, SSD, Retina-Net
+        Two-stage: RCNN, SPPNet, Fast RCNN, Pyramid Networks
+        
+## YOLO: You Only Look Once
+### 基本思想
+![基本思想](./doc/基本思想.jpg) 基本思想
+![多尺度融合](./doc/多尺度融合.jpg) Feature Pyramid Network(FPN)特征金字塔网络
+![原理举例](./doc/原理举例.jpg) 原理举例
+![执行度得分](./doc/置信度得分计算.jpg) 置信度得分计算
+![非极大值抑制](./doc/非极大值抑制.jpg) 非极大值抑制
+![损失函数](./doc/损失函数.jpg) 损失函数
+![YOLOv3网络结构](./doc/YOLOv3网络结构.jpg) YOLOv3网络结构
+![YOLOv4网络结构](./doc/YOLOv4网络结构.jpg) YOLOv4网络结构
+![YOLOv5网络结构](./doc/YOLOv5网络结构.jpg) YOLOv5网络结构
+![灵活配置不同复杂度的模型](./doc/灵活配置不同复杂度的模型.jpg) 灵活配置不同复杂度的模型
+![focus](./doc/focus.jpg) focus
+![CSPNe](./doc/CSPNet.jpg) CSPNe
+![SPP](./doc/SPP.jpg) SPP
+![PANet](./doc/PANet.jpg) PANet 路径聚合网络
