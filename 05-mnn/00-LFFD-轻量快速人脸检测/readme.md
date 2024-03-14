@@ -11,5 +11,7 @@
 ## 运行
 ### 使用camera
     $ ./test ../models/symbol_10_320_20L_5scales_v2_deploy.mnn
+    $ ./test ../models/
 ### 使用图像
     $ ./test ../models/symbol_10_320_20L_5scales_v2_deploy.mnn ../data/test_5.jpg
+    $ ./test ../models/ ../data/selfie.jpg

@@ -6,7 +6,6 @@
 #include <chrono>
 using namespace cv;
 
-
 int main(int argc, char **argv)
 {
 	std::string model_path;
@@ -31,8 +30,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	LFFD *face_detector = new LFFD(model_path, 5, 2);
-	if(using_camera == false)
+	LFFD *face_detector = new LFFD(model_path, 8, 2);
+	if (using_camera == false)
 	{
 		cv::Mat image = cv::imread(image_or_video_file);
 		std::vector<FaceInfo> finalBox;
@@ -45,7 +44,7 @@ int main(int argc, char **argv)
 		for (int i = 0; i < finalBox.size(); i++)
 		{
 			FaceInfo facebox = finalBox[i];
-			cv::Rect box = cv::Rect(facebox.x1, facebox.y1, facebox.x2 - facebox.x1, facebox.y2 - facebox.y1);
+			cv::Rect box = cv::Rect(facebox.x0, facebox.y0, facebox.x1 - facebox.x0, facebox.y1 - facebox.y0);
 			cv::rectangle(image, box, cv::Scalar(255, 0, 21), 2);
 		}
 		std::cout << finalBox.size() << std::endl;
@@ -72,7 +71,7 @@ int main(int argc, char **argv)
 			face_detector->detect(image, finalBox);
 			std::chrono::time_point<std::chrono::system_clock> t2 = std::chrono::system_clock::now();
 			float dur = (float)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000;
-			std::cout << "lffd time:" << dur << "ms" << std::endl;
+			std::cout << "lffd_ time:" << dur << "ms" << std::endl;
 
 			AVE_TIME += dur;
 
@@ -88,7 +87,7 @@ int main(int argc, char **argv)
 			for (int i = 0; i < finalBox.size(); i++)
 			{
 				FaceInfo facebox = finalBox[i];
-				cv::Rect box = cv::Rect(facebox.x1, facebox.y1, facebox.x2 - facebox.x1, facebox.y2 - facebox.y1);
+				cv::Rect box = cv::Rect(facebox.x0, facebox.y0, facebox.x1 - facebox.x0, facebox.y1 - facebox.y0);
 				cv::rectangle(image, box, cv::Scalar(255, 0, 21), 2);
 			}
 
@@ -99,7 +98,7 @@ int main(int argc, char **argv)
 		}
 
 		std::cout << "IMAGE SHAPE: "
-				<< "640x480" << std::endl;
+				  << "640x480" << std::endl;
 		std::cout << "MAX LOOP TIMES: " << MAXNUM << std::endl;
 		std::cout << "AVE TIME: " << AVE_TIME / count << " ms" << std::endl;
 		std::cout << "MAX TIME: " << MAX_TIME << " ms" << std::endl;
