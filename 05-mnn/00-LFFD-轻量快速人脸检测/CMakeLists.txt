@@ -12,7 +12,8 @@ find_package(OpenCV REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 #4.mnn include
-include_directories(${CMAKE_CURRENT_LIST_DIR}/MNN/include)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/MNN/include
+                ${CMAKE_CURRENT_LIST_DIR})
 
 # mnn lib
 add_library( MNN SHARED IMPORTED )

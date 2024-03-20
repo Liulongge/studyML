@@ -10,8 +10,8 @@
 
 ## 运行
 ### 使用camera
-    $ ./test ../models/symbol_10_320_20L_5scales_v2_deploy.mnn
-    $ ./test ../models/
+    $ ./test --run_mode=offline --model_name ../models/symbol_10_560_25L_8scales_v1_deploy.mnn --scale_num=8
+    $ ./test --run_mode=online --model_name ../models/symbol_10_320_20L_5scales_v2_deploy.mnn --scale_num=5
 ### 使用图像
-    $ ./test ../models/symbol_10_320_20L_5scales_v2_deploy.mnn ../data/test_5.jpg
-    $ ./test ../models/ ../data/selfie.jpg
+    $ ./test --run_mode=offline --model_name ../models/symbol_10_560_25L_8scales_v1_deploy.mnn --scale_num=8
+    $ ./test --run_mode=offline --model_name ../models/symbol_10_320_20L_5scales_v2_deploy.mnn --scale_num=5

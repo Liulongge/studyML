@@ -1,4 +1,3 @@
-
 #include "MNN_LFFD.h"
 
 const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
@@ -11,12 +10,8 @@ LFFD::LFFD(const std::string &model_path, int scale_num, int num_thread_)
 	outputTensors_.resize(scale_num * 2);
 	if (num_output_scales_ == 5)
 	{
-
-		mnn_model_file_ = model_path;
 		receptive_field_list_ = {20, 40, 80, 160, 320};
 		receptive_field_stride_ = {4, 8, 16, 32, 64};
-		// bbox_small_list_ = {10, 20, 40, 80, 160};
-		// bbox_large_list_ = {20, 40, 80, 160, 320};
 		receptive_field_center_start_ = {3, 7, 15, 31, 63};
 
 		for (int i = 0; i < receptive_field_list_.size(); i++)
@@ -32,11 +27,8 @@ LFFD::LFFD(const std::string &model_path, int scale_num, int num_thread_)
 	}
 	else if (num_output_scales_ == 8)
 	{
-		mnn_model_file_ = model_path + "/symbol_10_560_25L_8scales_v1_deploy.mnn";
 		receptive_field_list_ = {15, 20, 40, 70, 110, 250, 400, 560};
 		receptive_field_stride_ = {4, 4, 8, 8, 16, 32, 32, 32};
-		// bbox_small_list_ = {10, 15, 20, 40, 70, 110, 250, 400};
-		// bbox_large_list_ = {15, 20, 40, 70, 110, 250, 400, 560};
 		receptive_field_center_start_ = {3, 3, 7, 7, 15, 31, 31, 31};
 
 		for (int i = 0; i < receptive_field_list_.size(); i++)
@@ -54,7 +46,7 @@ LFFD::LFFD(const std::string &model_path, int scale_num, int num_thread_)
 							  "softmax7", "conv25_3_bbox"};
 	}
 
-	lffd_ = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromFile(mnn_model_file_.c_str()));
+	lffd_ = std::shared_ptr<MNN::Interpreter>(MNN::Interpreter::createFromFile(model_path.c_str()));
 	MNN::ScheduleConfig config;
 	config.type = MNN_FORWARD_CPU;
 	config.numThread = num_thread_;

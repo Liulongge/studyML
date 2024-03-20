@@ -57,8 +57,6 @@ private:
 	int image_w_;
 	int image_h_;
 
-	std::string mnn_model_file_;
-
 	std::vector<float> receptive_field_list_;
 	std::vector<float> receptive_field_stride_;
 	std::vector<float> bbox_small_list_;

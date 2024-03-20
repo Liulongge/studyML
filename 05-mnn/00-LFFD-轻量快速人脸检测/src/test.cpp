@@ -4,36 +4,35 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include "3dparty/cmdline.h"
 using namespace cv;
 
 int main(int argc, char **argv)
 {
-	std::string model_path;
-	std::string image_or_video_file;
-	bool using_camera = true;
-	if (argc == 3)
+	/* 参数解析 */
+	cmdline::parser cmd;
+  	cmd.add<std::string>("model_name", 'm', "model name", false, "../models/symbol_10_320_20L_5scales_v2_deploy.mnn");
+  	cmd.add<std::string>("data_name", 'd', "data name", false, "../data/640.jpeg");
+  	cmd.add<std::string>("run_mode", 'r', "run mode[offline/online]", true, "offline", cmdline::oneof<std::string>("offline", "online"));
+  	cmd.add<int>("scale_num", 's', "scale num[5/8]", false, 5, cmdline::oneof<int>(5, 8));
+	cmd.add("help", 'h', "help info");
+	bool ok=cmd.parse(argc, argv);
+	if (!ok)
 	{
-		using_camera = false;
-		model_path = argv[1];
-		image_or_video_file = argv[2];
-		std::cout << " using picture" << std::endl;
-	}
-	else if (argc == 2)
-	{
-		using_camera = true;
-		model_path = argv[1];
-		std::cout << " using camera" << std::endl;
-	}
-	else
-	{
-		std::cout << " name.exe mode_path image_file/video_file" << std::endl;
-		return -1;
+		std::cout << cmd.error() << std::endl << cmd.usage();
+		return 0;
 	}
 
-	LFFD *face_detector = new LFFD(model_path, 8, 2);
-	if (using_camera == false)
+	std::string model_name = cmd.get<std::string>("model_name");
+	std::string data_name = cmd.get<std::string>("data_name");
+	std::string run_mode = cmd.get<std::string>("run_mode");
+	int scale_num = cmd.get<int>("scale_num");
+
+	/* 实例化 */
+	LFFD *face_detector = new LFFD(model_name, scale_num, 8);
+	if (run_mode == "offline")
 	{
-		cv::Mat image = cv::imread(image_or_video_file);
+		cv::Mat image = cv::imread(data_name);
 		std::vector<FaceInfo> finalBox;
 
 		std::chrono::time_point<std::chrono::system_clock> t1 = std::chrono::system_clock::now();
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
 			cv::Rect box = cv::Rect(facebox.x0, facebox.y0, facebox.x1 - facebox.x0, facebox.y1 - facebox.y0);
 			cv::rectangle(image, box, cv::Scalar(255, 0, 21), 2);
 		}
-		std::cout << finalBox.size() << std::endl;
+		std::cout << "box num: " << finalBox.size() << std::endl;
 		cv::imwrite("res.jpg", image);
 		cv::namedWindow("MNN", WINDOW_NORMAL);
 		cv::imshow("MNN", image);
@@ -57,13 +56,7 @@ int main(int argc, char **argv)
 	{
 		cv::VideoCapture cap(0);
 		cv::Mat image;
-
-		int MAXNUM = 100;
-		float AVE_TIME = 0;
-		float MAX_TIME = -1;
-		float MIN_TIME = 99999999999999;
-		int count = 0;
-		while (count < 10000)
+		while (1)
 		{
 			cap >> image;
 			std::vector<FaceInfo> finalBox;
@@ -71,38 +64,21 @@ int main(int argc, char **argv)
 			face_detector->detect(image, finalBox);
 			std::chrono::time_point<std::chrono::system_clock> t2 = std::chrono::system_clock::now();
 			float dur = (float)std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000;
-			std::cout << "lffd_ time:" << dur << "ms" << std::endl;
-
-			AVE_TIME += dur;
-
-			if (MAX_TIME < dur)
-			{
-				MAX_TIME = dur;
-			}
-			if (MIN_TIME > dur)
-			{
-				MIN_TIME = dur;
-			}
+			std::cout << "lffd time:" << dur << "ms" << std::endl;
 
 			for (int i = 0; i < finalBox.size(); i++)
 			{
 				FaceInfo facebox = finalBox[i];
 				cv::Rect box = cv::Rect(facebox.x0, facebox.y0, facebox.x1 - facebox.x0, facebox.y1 - facebox.y0);
 				cv::rectangle(image, box, cv::Scalar(255, 0, 21), 2);
+				cv::putText(image, std::to_string(facebox.score), Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1);
 			}
-
+			
+ 
 			cv::namedWindow("MNN", WINDOW_NORMAL);
 			cv::imshow("MNN", image);
 			cv::waitKey(1);
-			count++;
 		}
-
-		std::cout << "IMAGE SHAPE: "
-				  << "640x480" << std::endl;
-		std::cout << "MAX LOOP TIMES: " << MAXNUM << std::endl;
-		std::cout << "AVE TIME: " << AVE_TIME / count << " ms" << std::endl;
-		std::cout << "MAX TIME: " << MAX_TIME << " ms" << std::endl;
-		std::cout << "MIN TIME: " << MIN_TIME << " ms" << std::endl;
 	}
 	return 0;
 }
