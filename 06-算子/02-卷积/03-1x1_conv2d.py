@@ -1,3 +1,6 @@
+# 参考:
+# https://blog.csdn.net/weixin_41936775/article/details/120083958?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522171155720516800188552853%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=171155720516800188552853&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_click~default-1-120083958-null-null.142^v100^pc_search_result_base7&utm_term=1x1%E5%8D%B7%E7%A7%AF&spm=1018.2226.3001.4187
+
 import numpy as np
 
 def convolve(image, kernel, padding=1, stride=1):
@@ -30,24 +33,24 @@ def convolve(image, kernel, padding=1, stride=1):
 image = np.array([[[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]],
                     [[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]],
                     [[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]]])
-# 创建nchw 1x1x3x3 kernel(输出图像channel为1)
-kernel = np.array([[[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                    [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]])
-# 创建nchw 1x3x3x3 kernel(输出图像channel为3)
-# kernel = np.array([[[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+# 创建nchw 1x3x1x1 kernel(输出图像channel为1)
+kernel = np.array([[[[2]],
+                    [[2]],
+                    [[2]]]])
+# 创建nchw 1x3x1x1 kernel(输出图像channel为3)
+# kernel = np.array([[[[2]],
+#                     [[2]],
+#                     [[2]]],
 
-#                    [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+#                    [[[2]],
+#                     [[2]],
+#                     [[2]]],
 
-#                    [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]])
+#                    [[[2]],
+#                     [[2]],
+#                     [[2]]]])
 
-output = convolve(image, kernel, padding=1, stride=1)
+output = convolve(image, kernel, padding=0, stride=1)
 
 print("input:\n{}".format(image))
 print("kernel:\n{}".format(kernel))
@@ -63,7 +66,7 @@ input_data = torch.tensor(image, dtype=torch.float32)
 # 定义一个卷积核
 kernel = torch.tensor(kernel, dtype=torch.float32)
 # 定义卷积层
-conv_layer = nn.Conv2d(in_channels=input_data.shape[-3], out_channels=kernel.shape[-3], kernel_size=3, padding=1, bias=False)
+conv_layer = nn.Conv2d(in_channels=input_data.shape[-3], out_channels=kernel.shape[-3], kernel_size=1, padding=0, bias=False)
 
 # 将定义好的卷积核赋值给卷积层的权重
 conv_layer.weight.data = kernel

@@ -30,28 +30,20 @@ def convolve(image, kernel, padding=1, stride=1):
 image = np.array([[[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]],
                     [[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]],
                     [[1, 2, 3, 4], [4, 5, 6, 7], [7, 8, 9, 10]]])
-# 创建nchw 1x1x3x3 kernel(输出图像channel为1)
+# 创建nchw 1x1x1x1 kernel(输出图像channel为1)
 kernel = np.array([[[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]])
-# 创建nchw 1x3x3x3 kernel(输出图像channel为3)
-# kernel = np.array([[[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+# 创建nchw 1x3x1x1 kernel(输出图像channel为1)
+kernel2 = np.array([[[[2]],
+                    [[2]],
+                    [[2]]]])
 
-#                    [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]],
+# output = convolve(image, kernel, padding=1, stride=1)
 
-#                    [[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-#                     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]]])
-
-output = convolve(image, kernel, padding=1, stride=1)
-
-print("input:\n{}".format(image))
-print("kernel:\n{}".format(kernel))
-print("output:\n{}".format(output))
+# print("input:\n{}".format(image))
+# print("kernel:\n{}".format(kernel))
+# print("output:\n{}".format(output))
 
 
 import torch
@@ -60,16 +52,25 @@ import torch.nn as nn
 # 创建一个输入数据
 input_data = torch.tensor(image, dtype=torch.float32)
 
-# 定义一个卷积核
-kernel = torch.tensor(kernel, dtype=torch.float32)
 # 定义卷积层
-conv_layer = nn.Conv2d(in_channels=input_data.shape[-3], out_channels=kernel.shape[-3], kernel_size=3, padding=1, bias=False)
+conv_layer = nn.Conv2d(in_channels=3, out_channels=3, kernel_size=3, padding=1, bias=False)
 
-# 将定义好的卷积核赋值给卷积层的权重
-conv_layer.weight.data = kernel
+
+conv_layer2 = nn.Conv2d(in_channels=3, out_channels=3, kernel_size=1, padding=0, groups=1, bias=False)
+
+
 
 # 进行卷积运算
+# 将定义好的卷积核赋值给卷积层的权重
+kernel = torch.tensor(kernel, dtype=torch.float32)
+conv_layer.weight.data = kernel
 output_data = conv_layer(input_data)
+print(output_data)
+
+kernel = torch.tensor(kernel2, dtype=torch.float32)
+conv_layer.weight.data = kernel
+output_data2 = conv_layer(output_data)
+print(output_data2)
 
 print("input:\n{}".format(input_data))
 print("kernel:\n{}".format(conv_layer.weight.data))
