@@ -14,7 +14,9 @@
         OnnxClip Onnx模型裁剪工具
 ### 使用
     $ ./MNNConvert -f CAFFE --modelFile XXX.caffemodel --prototxt XXX.prototxt --MNNModel XXX.mnn --bizCode biz
-    demo: $ ./MNNConvert -f CAFFE --modelFile ../../studyML/05-mnn/train_10_560_25L_8scales_v1_iter_1400000.caffemodel --prototxt ../../studyML/05-mnn/symbol_10_560_25L_8scales_v1_deploy.prototxt --MNNModel ../../studyML/05-mnn/symbol_10_560_25L_8scales_v1_deploy.mnn --bizCode biz
+    demo: 
+        $ ./MNNConvert -f CAFFE --modelFile ../../studyML/05-mnn/train_10_560_25L_8scales_v1_iter_1400000.caffemodel --prototxt ../../studyML/05-mnn/symbol_10_560_25L_8scales_v1_deploy.prototxt --MNNModel ../../studyML/05-mnn/symbol_10_560_25L_8scales_v1_deploy.mnn --bizCode biz
+        $ ./MNNConvert -f ONNX --modelFile ../../../models/my_model.onnx  --MNNModel ../../../models/my_model.mnn --bizCode biz
 ## 编译benchmark工具
 #### Linux / macOS / Ubuntu
     $ cmake .. -DMNN_BUILD_BENCHMARK=ON

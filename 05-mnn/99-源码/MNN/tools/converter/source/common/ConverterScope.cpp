@@ -26,9 +26,11 @@ std::vector<std::string>& ConverterScope::deps() {
     return mParent ? mParent->subgraphDeps : this->subgraphDeps;
 }
 
-int ConverterScope::declareTensor(std::string name) {
+int ConverterScope::declareTensor(std::string name)
+{
     auto iter = mTensorIdx.find(name);
-    if (iter != mTensorIdx.end()) {
+    if (iter != mTensorIdx.end())
+    {
         return iter->second;
     }
     tensors().push_back(name);

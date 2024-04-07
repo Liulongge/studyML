@@ -21,59 +21,76 @@ static int32_t _limit(int64_t i64) {
     }
     return i64;
 }
-std::vector<int> OnnxScope::topoSort(const onnx::GraphProto& onnxGraph) {
+std::vector<int> OnnxScope::topoSort(const onnx::GraphProto& onnxGraph) 
+{
     std::vector<int> idxMap;
     const int nodeCount   = onnxGraph.node_size();
     std::map<std::string, int> outputMap;
     std::map<int, std::vector<int>> graph; // key --[in]--> values
     std::vector<int> inDegree(nodeCount);
     // build Graph and inDegree
-    for (int i = 0; i < nodeCount; ++i) {
+    for (int i = 0; i < nodeCount; ++i) 
+    {
         const auto& onnxNode = onnxGraph.node(i);
-        for (int k = 0; k < onnxNode.output_size(); k++) {
+        for (int k = 0; k < onnxNode.output_size(); k++) 
+        {
             outputMap.insert(std::make_pair(onnxNode.output(k), i));
         }
     }
-    for (int i = 0; i < nodeCount; ++i) {
+    for (int i = 0; i < nodeCount; ++i) 
+    {
         const auto& onnxNode = onnxGraph.node(i);
-        for (int k = 0; k < onnxNode.input_size(); k++) {
+        for (int k = 0; k < onnxNode.input_size(); k++) 
+        {
             auto inputName = onnxNode.input(k);
             auto iter = outputMap.find(inputName);
-            if (iter != outputMap.end()) {
+            if (iter != outputMap.end()) 
+            {
                 graph[iter->second].push_back(i);
             }
         }
-        if (onnxNode.op_type() == "Loop") {
+        if (onnxNode.op_type() == "Loop") 
+        {
             auto& body = onnxNode.attribute(0).g();
-            for (int j=0; j<body.node_size(); ++j) {
-                for (int k=0; k<body.node(j).input_size(); ++k) {
+            for (int j=0; j<body.node_size(); ++j) 
+            {
+                for (int k=0; k<body.node(j).input_size(); ++k) 
+                {
                     auto inputName = body.node(j).input(k);
                     auto iter = outputMap.find(inputName);
-                    if (iter != outputMap.end()) {
+                    if (iter != outputMap.end()) 
+                    {
                         graph[iter->second].push_back(i);
                     }
                 }
             }
         }
     }
-    for (auto node : graph) {
-        for (auto output : node.second) {
+    for (auto node : graph) 
+    {
+        for (auto output : node.second) 
+        {
             inDegree[output]++;
         }
     }
     // topo sort
     std::queue<int> validNode;
-    for (int i = 0; i < nodeCount; i++) {
-        if (!inDegree[i]) {
+    for (int i = 0; i < nodeCount; i++) 
+    {
+        if (!inDegree[i]) 
+        {
             validNode.push(i);
         }
     }
-    while (!validNode.empty()) {
+    while (!validNode.empty()) 
+    {
         int node = validNode.front();
         validNode.pop();
         idxMap.push_back(node);
-        for (auto succ : graph[node]) {
-            if (--inDegree[succ] == 0) {
+        for (auto succ : graph[node]) 
+        {
+            if (--inDegree[succ] == 0) 
+            {
                 validNode.push(succ);
             }
         }

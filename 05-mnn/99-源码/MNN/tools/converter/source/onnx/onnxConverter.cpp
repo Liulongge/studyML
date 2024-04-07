@@ -22,43 +22,56 @@
 #include "onnxOpConverter.hpp"
 
 int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
-                std::unique_ptr<MNN::NetT>& netT) {
+                std::unique_ptr<MNN::NetT>& netT) 
+{
+    // 获取onnx模型路径
     std::string modelDir;
     size_t pos = inputModel.find_last_of("\\/");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos) 
+    {
         modelDir = inputModel.substr(0, pos + 1);
     }
 
+    // 实例化，从protobuf中读取onnx模型
     onnx::ModelProto onnxModel;
     // read ONNX Model
     bool success = onnx_read_proto_from_binary(inputModel.c_str(), &onnxModel);
     DCHECK(success) << "read onnx model failed: " << inputModel;
-    if (!success) {
+    if (!success) 
+    {
         MNN_ERROR("[ERROR] Model file is not onnx model.\n");
         return 1;
     }
 
+    // 从模型中获取ir与op版本信息
     int opsetVersion = 13;
     auto opsetInfo = onnxModel.opset_import();
-    if (!opsetInfo.empty()) {
+    if (!opsetInfo.empty()) 
+    {
         opsetVersion = static_cast<int>(opsetInfo.begin()->version());
     }
     LOG(INFO) << "ONNX Model ir version: " << onnxModel.ir_version();
     LOG(INFO) << "ONNX Model opset version: " << opsetVersion;
 
+    // 获取graph与node(算子)数量信息
     const auto& onnxGraph = onnxModel.graph();
     const int nodeCount   = onnxGraph.node_size();
+    printf("nodeCount: %d\n", nodeCount);
 
+    // 根据onnxGraph与netT原始指针创建OnnxScope
     std::unique_ptr<OnnxScope> scope(new OnnxScope(&onnxGraph, netT.get()));
     scope->mOpsetVersion = opsetVersion;
     // find the inputs which do not have initializer
     const auto& initializers         = scope->mInitializers;
-    const auto& inputs               = scope->mInputs;
+    const auto& inputs               = scope->mInputs; // onnx模型(graph)输入
     const auto& outputs              = scope->mOutputs;
     // set input node to MNN net
-    for (const auto& iter : inputs) {
+    for (const auto& iter : inputs) 
+    {
+        // 初始化mnn输入node(op)
         bool notHaveInitializer = initializers.find(iter.first) == initializers.end();
-        if (notHaveInitializer) {
+        if (notHaveInitializer) 
+        {
             MNN::OpT* MNNOp  = new MNN::OpT;
             MNNOp->name      = iter.first;
             MNNOp->type      = MNN::OpType_Input;
@@ -70,11 +83,16 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
             const auto& tensorInfo = (it->second)->type().tensor_type();
             const int inputDimSize = tensorInfo.shape().dim_size();
             inputParam->dims.resize(inputDimSize);
-            for (int i = 0; i < inputDimSize; ++i) {
+            // 获取onnx输入node dim信息，并初始化mnn node
+            for (int i = 0; i < inputDimSize; ++i) 
+            {
                 const auto& dim = tensorInfo.shape().dim(i);
-                if (dim.has_dim_value()) {
+                if (dim.has_dim_value()) 
+                {
                     inputParam->dims[i] = static_cast<int32_t>(dim.dim_value());
-                } else {
+                } 
+                else 
+                {
                     inputParam->dims[i] = -1;
                 }
             }
@@ -87,11 +105,20 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
     }
 
     // onnx model not all topo sort graph, sort it
+    // onnx模型可能不是拓扑排序好的，进行拓扑排序
     std::vector<int> idxMap = OnnxScope::topoSort(onnxGraph);
 
-    auto makeConst = [&](const std::string& inputName) {
+    // lambda表达式，
+    auto makeConst = [&](const std::string& inputName) 
+    {
+        // ONNX模型中的权重和参数信息实际上是存储在模型的初始化器（initializers）中的。
+        // 在ONNX模型中，初始化器是一组预先定义的常量值，用于在模型推理过程中作为输入提供给操作节点。
+        // 这些初始化器通常包含模型的权重和偏置等参数。
         const auto it         = initializers.find(inputName);
-        if (it != initializers.end() && scope->lookupTensor(it->first) == -1) {
+        if (it != initializers.end() && scope->lookupTensor(it->first) == -1) 
+        {
+            static int a =0 ;
+            printf("[TEST] %s %d %d %s\n", __FUNCTION__, __LINE__, a++, it->first.c_str());
             // Create const Op
             MNN::OpT* constOp   = new MNN::OpT;
             constOp->type       = MNN::OpType_Const;
@@ -102,51 +129,67 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
             netT->oplists.emplace_back(constOp);
         }
     };
-    for (int i=0; i<onnxGraph.output_size(); ++i) {
+
+    // 模型(graph)输出node
+    for (int i=0; i<onnxGraph.output_size(); ++i) 
+    {
         makeConst(onnxGraph.output(i).name());
     }
+
     // Declare all outputs
-    for (int idx = 0; idx < nodeCount; ++idx) {
+    for (int idx = 0; idx < nodeCount; ++idx) 
+    {
         int i = idxMap.size() == nodeCount ? idxMap[idx] : idx;
         const auto& onnxNode = onnxGraph.node(i);
-        for (int k = 0; k < onnxNode.output_size(); k++) {
+        for (int k = 0; k < onnxNode.output_size(); k++) 
+        {
             scope->declareTensor(onnxNode.output(k));
         }
     }
 
     // onnx node ==> MNN node
-    for (int idx = 0; idx < nodeCount; ++idx) {
+    for (int idx = 0; idx < nodeCount; ++idx) 
+    {
         int i = idxMap.size() == nodeCount ? idxMap[idx] : idx;
         const auto& onnxNode = onnxGraph.node(i);
         const auto& opType   = onnxNode.op_type();
 
         // name maybe null, use the first output name as node-name
+        // node名字可能是空的，使用第一个输出的名字作为node名字
         const auto& name = onnxNode.output(0);
         auto opConverter = onnxOpConverterSuit::get()->search(opType);
 
+        // 创建opT并初始化
         MNN::OpT* MNNOp  = new MNN::OpT;
         MNNOp->name      = name;
         MNNOp->type      = opConverter->opType();
         MNNOp->main.type = opConverter->type();
 
         // convert initializer to be Constant node(op)
-        for (int k = 0; k < onnxNode.input_size(); ++k) {
+        // 输入node
+        for (int k = 0; k < onnxNode.input_size(); ++k) 
+        {
+            static int a = 0;
             const auto& inputName = onnxNode.input(k);
             makeConst(inputName);
         }
 
         // build input and output
-        for (int k = 0; k < onnxNode.input_size(); k++) {
+        for (int k = 0; k < onnxNode.input_size(); k++) 
+        {
             int inputIdx = scope->lookupTensor(onnxNode.input(k));
-            if (inputIdx < 0) {
+            if (inputIdx < 0) 
+            {
                 LOG(INFO) << "Check it out ==> " << MNNOp->name << " has empty input, the index is " << k;
             }
             MNNOp->inputIndexes.push_back(inputIdx);
         }
-        for (int k = onnxNode.input_size() - 1; k >= 0 && MNNOp->inputIndexes[k] < 0; --k) {
+        for (int k = onnxNode.input_size() - 1; k >= 0 && MNNOp->inputIndexes[k] < 0; --k) 
+        {
             MNNOp->inputIndexes.pop_back();
         }
-        for (int k = 0; k < onnxNode.output_size(); k++) {
+        for (int k = 0; k < onnxNode.output_size(); k++) 
+        {
             MNNOp->outputIndexes.push_back(scope->declareTensor(onnxNode.output(k)));
         }
         // build op
@@ -155,7 +198,8 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
     }
     netT->tensorNumber = netT->tensorName.size();
     // set MNN net output name
-    for (const auto& iter : outputs) {
+    for (const auto& iter : outputs) 
+    {
         netT->outputName.push_back(iter.first);
     }
 

@@ -11,9 +11,11 @@
 #include <stdint.h>
 #include <fstream>
 
-bool onnx_read_proto_from_binary(const char* filepath, google::protobuf::Message* message) {
+bool onnx_read_proto_from_binary(const char* filepath, google::protobuf::Message* message) 
+{
     std::ifstream fs(filepath, std::ifstream::in | std::ifstream::binary);
-    if (!fs.is_open()) {
+    if (!fs.is_open()) 
+    {
         fprintf(stderr, "open failed %s\n", filepath);
         return false;
     }

@@ -489,82 +489,122 @@ bool Cli::initializeMNNConvertArgs(modelConfig &modelPath, int argc, char **argv
     return true;
 }
 
-bool Cli::convertModel(modelConfig& modelPath) {
-    if (modelPath.dumpInfo) {
+bool Cli::convertModel(modelConfig& modelPath) 
+{
+    if (modelPath.dumpInfo) 
+    {
         dumpModelInfo(modelPath.modelFile.c_str());
         return true;
     }
     std::cout << "Start to Convert Other Model Format To MNN Model..., target version: " << modelPath.targetVersion << std::endl;
+    // 创建NetT对象
     std::unique_ptr<MNN::NetT> netT = std::unique_ptr<MNN::NetT>(new MNN::NetT());
     int parseRes = 1;
-    if (modelPath.model == modelConfig::CAFFE) {
-        parseRes = caffe2MNNNet(modelPath.prototxtFile, modelPath.modelFile, modelPath.bizCode, netT);
-    } else if (modelPath.model == modelConfig::TENSORFLOW) {
-        parseRes = tensorflow2MNNNet(modelPath.modelFile, modelPath.bizCode, netT);
-    } else if (modelPath.model == modelConfig::MNN) {
-        if (modelPath.mnn2json) {
-            if (mnn2json(modelPath.modelFile.c_str(), modelPath.MNNModel.c_str())) {
-                MNN_PRINT("MNNModel %s has convert to JsonFile %s.\n", modelPath.modelFile.c_str(), modelPath.MNNModel.c_str());
-                return true;
-            } else {
-                MNN_ERROR("[ERROR] MNN to Json failed.\n");
-                return false;
-            }
-        } else {
-            parseRes = addBizCode(modelPath.modelFile, modelPath.bizCode, netT);
-        }
-    } else if (modelPath.model == modelConfig::ONNX) {
+    // if (modelPath.model == modelConfig::CAFFE)
+    // {
+    //     parseRes = caffe2MNNNet(modelPath.prototxtFile, modelPath.modelFile, modelPath.bizCode, netT);
+    // }
+    // else if (modelPath.model == modelConfig::TENSORFLOW)
+    // {
+    //     parseRes = tensorflow2MNNNet(modelPath.modelFile, modelPath.bizCode, netT);
+    // }
+    // else if (modelPath.model == modelConfig::MNN)
+    // {
+    //     if (modelPath.mnn2json)
+    //     {
+    //         if (mnn2json(modelPath.modelFile.c_str(), modelPath.MNNModel.c_str()))
+    //         {
+    //             MNN_PRINT("MNNModel %s has convert to JsonFile %s.\n", modelPath.modelFile.c_str(), modelPath.MNNModel.c_str());
+    //             return true;
+    //         }
+    //         else
+    //         {
+    //             MNN_ERROR("[ERROR] MNN to Json failed.\n");
+    //             return false;
+    //         }
+    //     }
+    //     else 
+    //     {
+    //         parseRes = addBizCode(modelPath.modelFile, modelPath.bizCode, netT);
+    //     }
+    // } 
+    // else if (modelPath.model == modelConfig::ONNX) 
+    {
+        // 模型转换：使用特定模型转换后端
         parseRes = onnx2MNNNet(modelPath.modelFile, modelPath.bizCode, netT);
-    } else if (modelPath.model == modelConfig::TFLITE) {
-        parseRes = tflite2MNNNet(modelPath.modelFile, modelPath.bizCode, netT);
-#ifdef MNN_BUILD_TORCH
-    } else if (modelPath.model == modelConfig::TORCH) {
-        parseRes = torch2MNNNet(modelPath.modelFile, modelPath.bizCode, netT, modelPath.customOpLibs);
-#endif
-    } else if (modelPath.model == modelConfig::JSON) {
-        if (json2mnn(modelPath.modelFile.c_str(), modelPath.MNNModel.c_str())) {
-            MNN_PRINT("JsonFile %s has convert to MNNModel %s.\n", modelPath.modelFile.c_str(), modelPath.MNNModel.c_str());
-            return true;
-        } else {
-            MNN_ERROR("[ERROR] Json to MNN failed.\n");
-            return false;
-        }
-    } else {
-        MNN_ERROR("[ERROR] Not Support Model Type.\n");
-    }
-    if (netT.get() == nullptr || parseRes) {
-        MNN_ERROR("[ERROR] Convert error, please check your file format.\n");
-        return false;
-    }
+    } 
+//     else if (modelPath.model == modelConfig::TFLITE) 
+//     {
+//         parseRes = tflite2MNNNet(modelPath.modelFile, modelPath.bizCode, netT);
+// #ifdef MNN_BUILD_TORCH
+//     } 
+//     else if (modelPath.model == modelConfig::TORCH) 
+//     {
+//         parseRes = torch2MNNNet(modelPath.modelFile, modelPath.bizCode, netT, modelPath.customOpLibs);
+// #endif
+//     } 
+//     else if (modelPath.model == modelConfig::JSON) 
+//     {
+//         if (json2mnn(modelPath.modelFile.c_str(), modelPath.MNNModel.c_str())) 
+//         {
+//             MNN_PRINT("JsonFile %s has convert to MNNModel %s.\n", modelPath.modelFile.c_str(), modelPath.MNNModel.c_str());
+//             return true;
+//         } 
+//         else 
+//         {
+//             MNN_ERROR("[ERROR] Json to MNN failed.\n");
+//             return false;
+//         }
+//     } 
+//     else 
+//     {
+//         MNN_ERROR("[ERROR] Not Support Model Type.\n");
+//     }
+    // if (netT.get() == nullptr || parseRes) 
+    // {
+    //     MNN_ERROR("[ERROR] Convert error, please check your file format.\n");
+    //     return false;
+    // }
     int error = 0;
-    if (modelPath.defaultBatchSize > 0) {
-        for (const auto& op : netT->oplists) {
-            if (op->type != OpType_Input || nullptr == op->main.AsInput()) {
+    if (modelPath.defaultBatchSize > 0) 
+    {
+        for (const auto& op : netT->oplists) 
+        {
+            if (op->type != OpType_Input || nullptr == op->main.AsInput()) 
+            {
                 continue;
             }
             auto inputP = op->main.AsInput();
-            if (inputP->dims.size() >= 1 && inputP->dims[0] <= 0) {
+            if (inputP->dims.size() >= 1 && inputP->dims[0] <= 0) 
+            {
                 std::cout << "Set " << op->name << " batch = " << modelPath.defaultBatchSize << std::endl;
                 inputP->dims[0] = modelPath.defaultBatchSize;
             }
         }
     }
-    if (modelPath.model != modelConfig::MNN || modelPath.optimizeLevel >= 2) {
+    if (modelPath.model != modelConfig::MNN || modelPath.optimizeLevel >= 2) 
+    {
         std::cout << "Start to Optimize the MNN Net..." << std::endl;
         std::unique_ptr<MNN::NetT> newNet = optimizeNet(netT, modelPath.forTraining, modelPath);
         error = writeFb(newNet, modelPath.MNNModel, modelPath);
-    } else {
+    } 
+    else 
+    {
         error = writeFb(netT, modelPath.MNNModel, modelPath);
     }
-    if (0 == error) {
-        std::cout << "Converted Success!" << std::endl;
-    } else {
-        std::cout << "Converted Failed!" << std::endl;
-    }
-    if (modelPath.testDir.size() > 0) {
-        std::cout << "Check convert result by " << modelPath.testDir << ", thredhold is " << modelPath.testThredhold << std::endl;
-        Cli::testconvert(modelPath.MNNModel, modelPath.testDir, modelPath.testThredhold, modelPath.testConfig);
-    }
+    // if (0 == error) 
+    // {
+    //     std::cout << "Converted Success!" << std::endl;
+    // } 
+    // else 
+    // {
+    //     std::cout << "Converted Failed!" << std::endl;
+    // }
+    // if (modelPath.testDir.size() > 0) 
+    // {
+    //     std::cout << "Check convert result by " << modelPath.testDir << ", thredhold is " << modelPath.testThredhold << std::endl;
+    //     Cli::testconvert(modelPath.MNNModel, modelPath.testDir, modelPath.testThredhold, modelPath.testConfig);
+    // }
     return true;
 }
 
