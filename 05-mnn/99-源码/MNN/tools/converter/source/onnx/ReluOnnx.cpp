@@ -19,26 +19,35 @@ MNN::OpParameter ReluOnnx::type() {
 }
 
 void ReluOnnx::run(MNN::OpT* dstOp, const onnx::NodeProto* onnxNode,
-                   OnnxScope* scope) {
+                   OnnxScope* scope) 
+{
     auto relu = new MNN::ReluT;
 
     float slope         = 0.01f;
     const auto attrSize = onnxNode->attribute_size();
-    for (int i = 0; i < attrSize; ++i) {
+    for (int i = 0; i < attrSize; ++i) 
+    {
         const auto& attributeProto = onnxNode->attribute(i);
         const auto& attributeName  = attributeProto.name();
 
-        if (attributeName == "alpha") {
+        if (attributeName == "alpha") 
+        {
             DCHECK(attributeProto.type() == ::onnx::AttributeProto_AttributeType_FLOAT) << "Node Attribute ERROR";
             slope = attributeProto.f();
-        } else {
+        } 
+        else 
+        {
             DLOG(ERROR) << "TODO!";
         }
     }
 
-    if (onnxNode->op_type() == "LeakyRelu") {
+    // 坡度
+    if (onnxNode->op_type() == "LeakyRelu") 
+    {
         relu->slope = slope;
-    } else {
+    } 
+    else 
+    {
         relu->slope = .0f;
     }
 

@@ -10,30 +10,36 @@
 #include "../source/core/FileLoader.hpp"
 #include <fstream>
 
-auto RemoveParams = [](std::unique_ptr<MNN::OpT>& op) {
+auto RemoveParams = [](std::unique_ptr<MNN::OpT>& op) 
+{
     const auto opType = op->type;
-    switch (opType) {
+    switch (opType) 
+    {
         case MNN::OpType_Convolution:
         case MNN::OpType_Deconvolution:
-        case MNN::OpType_ConvolutionDepthwise: {
+        case MNN::OpType_ConvolutionDepthwise: 
+        {
             auto param = op->main.AsConvolution2D();
             param->weight.clear();
             param->bias.clear();
             break;
         }
-        case MNN::OpType_TfQuantizedConv2D: {
+        case MNN::OpType_TfQuantizedConv2D: 
+        {
             auto param = op->main.AsTfQuantizedConv2D();
             param->weight.clear();
             param->bias.clear();
             break;
         }
-        case MNN::OpType_MatMul: {
+        case MNN::OpType_MatMul: 
+        {
             auto param = op->main.AsMatMul();
             param->weight.clear();
             param->bias.clear();
             break;
         }
-        case MNN::OpType_BatchNorm: {
+        case MNN::OpType_BatchNorm: 
+        {
             auto param = op->main.AsBatchNorm();
             param->slopeData.clear();
             param->meanData.clear();
@@ -43,13 +49,15 @@ auto RemoveParams = [](std::unique_ptr<MNN::OpT>& op) {
             param->Bdata.clear();
             break;
         }
-        case MNN::OpType_Scale: {
+        case MNN::OpType_Scale: 
+        {
             auto param = op->main.AsScale();
             param->scaleData.clear();
             param->biasData.clear();
             break;
         }
-        case MNN::OpType_LayerNorm: {
+        case MNN::OpType_LayerNorm: 
+        {
             auto param = op->main.AsLayerNorm();
             param->gamma.clear();
             param->beta.clear();
@@ -140,12 +148,16 @@ void RemoveAndStoreParam(std::unique_ptr<MNN::OpT>& op, std::ofstream* fs, int64
     }
 }
 
-void removeParams(std::unique_ptr<MNN::NetT>& netT) {
-    for (auto& op : netT->oplists) {
+void removeParams(std::unique_ptr<MNN::NetT>& netT) 
+{
+    for (auto& op : netT->oplists) 
+    {
         RemoveParams(op);
     }
-    for (auto& subgraph : netT->subgraphs) {
-        for (auto& op : subgraph->nodes) {
+    for (auto& subgraph : netT->subgraphs) 
+    {
+        for (auto& op : subgraph->nodes) 
+        {
             RemoveParams(op);
         }
     }

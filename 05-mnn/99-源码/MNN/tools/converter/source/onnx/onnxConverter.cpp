@@ -118,8 +118,8 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
         if (it != initializers.end() && scope->lookupTensor(it->first) == -1) 
         {
             static int a =0 ;
-            printf("[TEST] %s %d %d %s\n", __FUNCTION__, __LINE__, a++, it->first.c_str());
             // Create const Op
+            // 创建常量op
             MNN::OpT* constOp   = new MNN::OpT;
             constOp->type       = MNN::OpType_Const;
             constOp->main.type  = MNN::OpParameter_Blob;
@@ -133,6 +133,7 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
     // 模型(graph)输出node
     for (int i=0; i<onnxGraph.output_size(); ++i) 
     {
+        // lambda表达式调用, 创建输出op并初始化
         makeConst(onnxGraph.output(i).name());
     }
 
@@ -148,22 +149,27 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
     }
 
     // onnx node ==> MNN node
+    // onnx node转MNN node
     for (int idx = 0; idx < nodeCount; ++idx) 
     {
         int i = idxMap.size() == nodeCount ? idxMap[idx] : idx;
+        // onnx node
         const auto& onnxNode = onnxGraph.node(i);
+        // 算子类型(string): Conv, ReLu, Add, AveragePool等
         const auto& opType   = onnxNode.op_type();
 
         // name maybe null, use the first output name as node-name
         // node名字可能是空的，使用第一个输出的名字作为node名字
+        // node名字(string类型): input.4, onnx::Pad_188, onnx::Conv_128等
         const auto& name = onnxNode.output(0);
+        // onnx op转换器套装, 查找并返回对应onnx算子类型的算子转换器
         auto opConverter = onnxOpConverterSuit::get()->search(opType);
 
         // 创建opT并初始化
         MNN::OpT* MNNOp  = new MNN::OpT;
-        MNNOp->name      = name;
-        MNNOp->type      = opConverter->opType();
-        MNNOp->main.type = opConverter->type();
+        MNNOp->name      = name; // op名字
+        MNNOp->type      = opConverter->opType(); // op类型, see OpType
+        MNNOp->main.type = opConverter->type(); // op param类型, see OpParameter
 
         // convert initializer to be Constant node(op)
         // 输入node
@@ -193,7 +199,9 @@ int onnx2MNNNet(const std::string inputModel, const std::string bizCode,
             MNNOp->outputIndexes.push_back(scope->declareTensor(onnxNode.output(k)));
         }
         // build op
+        // 调用不同的子类进行构建(例如：MNN/tools/converter/source/onnx/ReluOnnx.cpp)
         opConverter->run(MNNOp, &onnxNode, scope.get());
+        // 将构建好的op送入vector保存
         netT->oplists.emplace_back(MNNOp);
     }
     netT->tensorNumber = netT->tensorName.size();

@@ -10,7 +10,8 @@
 #include <random>
 #include <sstream>
 
-static std::string uuid4() {
+static std::string uuid4() 
+{
     static std::random_device              rd;
     static std::mt19937_64                 gen(rd());
     static std::uniform_int_distribution<> dis(0, 15);
@@ -19,11 +20,13 @@ static std::string uuid4() {
     std::stringstream ss;
     int i;
     ss << std::hex;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++) 
+    {
        ss << dis(gen);
     }
     ss << "-";
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++) 
+    {
        ss << dis(gen);
     }
     ss << "-4";
@@ -43,11 +46,15 @@ static std::string uuid4() {
 }
 
 void addUUID(std::unique_ptr<MNN::NetT>& netT, MNN::Compression::Pipeline proto) {
-    if (netT->mnn_uuid.empty()) {
+    if (netT->mnn_uuid.empty()) 
+    {
         // set uuid from compress file
-        if (proto.has_mnn_uuid()) {
+        if (proto.has_mnn_uuid()) 
+        {
             netT->mnn_uuid = proto.mnn_uuid();
-        } else {
+        } 
+        else
+        {
             netT->mnn_uuid = uuid4();
         }
     }
