@@ -580,7 +580,8 @@ bool fuseConstIntoSubgraph(MNN::NetT* net, const std::vector<MNN::SubGraphProtoT
 
 using namespace MNN;
 using namespace MNN::Express;
-std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bool forTraining, modelConfig& config) {
+std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bool forTraining, modelConfig& config) 
+{
     Global<modelConfig>::Reset(&config);
     std::unique_ptr<std::ofstream, void(*)(std::ofstream*)> externalFile(
         new std::ofstream(".__convert_external_data.bin", std::ios::binary),
@@ -588,16 +589,21 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bo
             fs->close();
             delete fs;
     });
-    if (externalFile.get() && externalFile->is_open() && externalFile->good()) {
+    if (externalFile.get() && externalFile->is_open() && externalFile->good()) 
+    {
         config.externalFile = externalFile.get();
-    } else {
+    } 
+    else 
+    {
         config.externalFile = nullptr;
     }
-    if (originNet->sourceType == NetSource_TENSORFLOW) {
+    if (originNet->sourceType == NetSource_TENSORFLOW) 
+    {
         GenerateSubGraph(originNet);
     }
     std::vector<MNN::SubGraphProtoT*> subgraphs;
-    for (auto& subgraph : originNet->subgraphs) {
+    for (auto& subgraph : originNet->subgraphs) 
+    {
         subgraphs.push_back(subgraph.get());
     }
     OptimizeContext ctx;
@@ -616,11 +622,15 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bo
     // RunOptimize won't use subgraph, so we can do it before other subgraph optimize safely
     std::unique_ptr<MNN::NetT> net = ctx.RunOptimize(originNet, empty);
     auto program = Program::create(net.get(), true, true);
-    auto addVars = [&](std::shared_ptr<Program> program, const std::vector<std::string>& tensorName) {
-        for (const auto& iter : program->vars()) {
-            if (iter.first < tensorName.size() && iter.first >= 0) {
+    auto addVars = [&](std::shared_ptr<Program> program, const std::vector<std::string>& tensorName) 
+    {
+        for (const auto& iter : program->vars()) 
+        {
+            if (iter.first < tensorName.size() && iter.first >= 0) 
+            {
                 auto name = tensorName[iter.first];
-                if (inputs.find(name) == inputs.end()) {
+                if (inputs.find(name) == inputs.end()) 
+                {
                     inputs[name] = iter.second;
                 }
             }
@@ -629,7 +639,8 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bo
     addVars(program, net->tensorName);
     // Reversing subgraph so we iterate them by topo order (like tree traversal), so every var used by subgraph be prepared
     std::reverse(ctx.subgraphs.begin(), ctx.subgraphs.end());
-    for (int idx = 0; idx < ctx.subgraphs.size(); ++idx) {
+    for (int idx = 0; idx < ctx.subgraphs.size(); ++idx) 
+    {
         // complete it first so OpType_Extra be removed
         CompleteSubGraph(inputs, ctx.subgraphs[idx]);
         auto new_graph = ctx.completed_subgraphs[idx];
@@ -642,13 +653,15 @@ std::unique_ptr<MNN::NetT> optimizeNet(std::unique_ptr<MNN::NetT>& originNet, bo
     ctx.subgraphs = std::move(ctx.completed_subgraphs);
     // from inner to upper, make some optimize for subgraph is visable to outer graph and root
     std::reverse(ctx.subgraphs.begin(), ctx.subgraphs.end());
-    for (auto subgraph : ctx.subgraphs) {
+    for (auto subgraph : ctx.subgraphs) 
+    {
         CompleteSubGraph(inputs, subgraph);
     }
     net = ctx.RunOptimize(net, empty);
     
     fuseConstIntoSubgraph(net.get(), ctx.completed_subgraphs);
-    for (auto* subgraph : ctx.completed_subgraphs) {
+    for (auto* subgraph : ctx.completed_subgraphs) 
+    {
         net->subgraphs.emplace_back(subgraph);
     }
     return std::move(net);

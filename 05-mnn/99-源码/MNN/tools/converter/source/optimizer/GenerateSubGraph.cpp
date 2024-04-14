@@ -576,26 +576,31 @@ static std::vector<std::unique_ptr<OpT>> _makeSubGraph(std::shared_ptr<ClusterNo
     return {};
 }
 
-int GenerateSubGraph(std::unique_ptr<MNN::NetT>& netT) {
+int GenerateSubGraph(std::unique_ptr<MNN::NetT>& netT) 
+{
     // Remove unuseful op before cluster
     std::vector<std::string> passes = {
         "RemoveUnusefulOp",
     };
     for (auto pass : passes) {
         auto convert = PostConverter::get(pass);
-        if (nullptr == convert) {
+        if (nullptr == convert) 
+        {
             continue;
         }
         convert->onExecute(netT);
     }
     bool hasControlFlow = false;
-    for (auto& op : netT->oplists) {
-        if (_isControlOp(op.get())) {
+    for (auto& op : netT->oplists) 
+    {
+        if (_isControlOp(op.get())) 
+        {
             hasControlFlow = true;
             break;
         }
     }
-    if (!hasControlFlow) {
+    if (!hasControlFlow) 
+    {
         return 0;
     }
     // We broadly divided all nodes into clusters by the prefix of the node
@@ -608,21 +613,26 @@ int GenerateSubGraph(std::unique_ptr<MNN::NetT>& netT) {
     std::map<std::string, std::shared_ptr<ClusterNode>> clusters;
     std::vector<std::shared_ptr<ClusterNode>> rootClusters;
     bool hasControlflow = false;
-    for (auto& node : netT->oplists) {
+    for (auto& node : netT->oplists) 
+    {
         std::string name = RSplitString(node->name, "/").at(0);
         _makeClusterNode(name, clusters, rootClusters);
         auto it = clusters.find(name);
-        if (node->type == OpType_Extra) {
+        if (node->type == OpType_Extra) 
+        {
             auto type = node->main.AsExtra()->type;
-            if (type == "LoopCond") {
+            if (type == "LoopCond") 
+            {
                 hasControlflow = true;
                 it->second->hasLoop = true;
             }
-            else if (type == "Switch") {
+            else if (type == "Switch") 
+            {
                 hasControlflow = true;
                 it->second->hasSwitch = true;
             }
-            else if (type == "Merge") {
+            else if (type == "Merge") 
+            {
                 hasControlflow = true;
                 it->second->hasMerge = true;
             }
@@ -631,23 +641,29 @@ int GenerateSubGraph(std::unique_ptr<MNN::NetT>& netT) {
     }
     netT->oplists.clear();
     std::map<std::string, int> tensorNameMap;
-    for (int i=0; i<netT->tensorName.size(); ++i) {
+    for (int i=0; i<netT->tensorName.size(); ++i) 
+    {
         tensorNameMap[netT->tensorName[i]] = i;
     }
-    for (auto n : rootClusters) {
+    for (auto n : rootClusters) 
+    {
         _mergeSubGraph(n);
     }
 #ifdef MNN_PRINT_SUBGRAPH
-    for (auto n : rootClusters) {
+    for (auto n : rootClusters) 
+    {
         _printSubGraph(n);
     }
 #endif
-    for (auto n : rootClusters) {
+    for (auto n : rootClusters) 
+    {
         auto controlOp = _makeSubGraph(n, netT.get(), tensorNameMap);
-        for (auto& c : n->nodes) {
+        for (auto& c : n->nodes) 
+        {
             netT->oplists.emplace_back(std::move(c));
         }
-        for (auto& op : controlOp) {
+        for (auto& op : controlOp) 
+        {
             netT->oplists.emplace_back(std::move(op));
         }
     }

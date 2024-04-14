@@ -45,3 +45,5 @@
     [ - ] mobilenetV3.mnn             max =    1.508 ms  min =    0.959 ms  avg =    1.081 ms
     [ - ] inception-v3.mnn            max =   29.295 ms  min =   28.982 ms  avg =   29.050 ms
 
+## 模型量化
+    $ ./quantized.out ../../../models/my_model.mnn  ../../../models/model_quan.mnn ../../../models/imageInputConfig.json
