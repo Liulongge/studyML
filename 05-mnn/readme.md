@@ -45,7 +45,9 @@
     [ - ] mobilenetV3.mnn             max =    1.508 ms  min =    0.959 ms  avg =    1.081 ms
     [ - ] inception-v3.mnn            max =   29.295 ms  min =   28.982 ms  avg =   29.050 ms
 
-## 量化
+## 模型量化
+    $ ./quantized.out ../../../models/my_model.mnn  ../../../models/model_quan.mnn ../../../models/imageInputConfig.json
+
     $ python pymnn/examples/MNNQuant/test_mnn_offline_quant.py --mnn_model demo/model/MobileNet/mobilenet_v1.mnn --quant_imgs ../../../../Desktop/coco/val2017 --quant_model ./quant_model10.mnn
 
     $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py /Users/runge.liu/Documents/code/studyML/05-mnn/models/quant_model10.mnn ./demo/model/MobileNet/ILSVRC2012_val_00049999.JPEG
