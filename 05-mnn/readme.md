@@ -50,4 +50,8 @@
 
     $ python pymnn/examples/MNNQuant/test_mnn_offline_quant.py --mnn_model demo/model/MobileNet/mobilenet_v1.mnn --quant_imgs ../../../../Desktop/coco/val2017 --quant_model ./quant_model10.mnn
 
-    $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py /Users/runge.liu/Documents/code/studyML/05-mnn/models/quant_model10.mnn ./demo/model/MobileNet/ILSVRC2012_val_00049999.JPEG
+    $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py ../../models/quant_model10.mnn ./demo/model/MobileNet/ILSVRC2012_val_00049999.JPEG
+
+    $ python pymnn/examples/MNNQuant/test_mnn_offline_quant.py --mnn_model ../../models/mobilenet_v1.mnn --quant_imgs ../../../../../../Desktop/coco/val2017 --quant_model ./mobilenet_v1_quant.mnn
+
+    $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py ../../models/mobilenet_v1_quant.mnn ../../models/ILSVRC2012_val_00049999.JPEG
