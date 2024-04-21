@@ -11,6 +11,7 @@
 #include <string>
 #include "calibration.hpp"
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char* argv[]) 
+{
     return quant_main(argc, argv);
 }

@@ -10,19 +10,17 @@
         0.00784314,
         0.00784314
     ],
-    "width":640,
-    "height":360,
+    "width":224,
+    "height":224,
     "path":"/Users/runge.liu/Desktop/coco/val2017/",
-    "used_sample_num":500,
+    "used_sample_num":50,
     "feature_quantize_method":"EMA",
     "weight_quantize_method":"MAX_ABS",
     "feature_clamp_value":127,
     "weight_clamp_value":127,
-    "batch_size":32,
+    "batch_size":3,
     "quant_bits":8,
-    "skip_quant_op_names":[
-        "skip_quant_op_name1", "skip_quant_op_name2"
-    ],
+
     "input_type":"image",
     "debug":false
 }

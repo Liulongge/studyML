@@ -55,7 +55,8 @@ Calibration::Calibration(MNN::NetT* model, const uint8_t* modelBuffer, const int
         output << fileNames.rdbuf();
         auto outputStr = output.str();
         document.Parse(outputStr.c_str());
-        if (document.HasParseError()) {
+        if (document.HasParseError()) 
+        {
             MNN_ERROR("Invalid json\n");
             mValid = false;
             return;
@@ -65,15 +66,19 @@ Calibration::Calibration(MNN::NetT* model, const uint8_t* modelBuffer, const int
     _imageProcessConfig.filterType = CV::BILINEAR;
     _imageProcessConfig.destFormat = BGR;
     {
-        if (picObj.HasMember("format")) {
+        // 获取format信息并更新format
+        if (picObj.HasMember("format")) 
+        {
             auto format = picObj["format"].GetString();
             static std::map<std::string, ImageFormat> formatMap{{"BGR", BGR}, {"RGB", RGB}, {"GRAY", GRAY}, {"RGBA", RGBA}, {"BGRA", BGRA}};
-            if (formatMap.find(format) != formatMap.end()) {
+            if (formatMap.find(format) != formatMap.end()) 
+            {
                 _imageProcessConfig.destFormat = formatMap.find(format)->second;
             }
         }
     }
 
+    // 根据format计算channel
     switch (_imageProcessConfig.destFormat) {
         case GRAY:
             _channels = 1;
@@ -93,114 +98,151 @@ Calibration::Calibration(MNN::NetT* model, const uint8_t* modelBuffer, const int
     _imageProcessConfig.sourceFormat = RGBA;
     _calibrationFileNum = 0;
     {
-        if (picObj.HasMember("mean")) {
+        // 获取均值信息
+        if (picObj.HasMember("mean")) 
+        {
             auto mean = picObj["mean"].GetArray();
             int cur   = 0;
-            for (auto iter = mean.begin(); iter != mean.end(); iter++) {
+            for (auto iter = mean.begin(); iter != mean.end(); iter++) 
+            {
                 _imageProcessConfig.mean[cur++] = iter->GetFloat();
             }
         }
-        if (picObj.HasMember("normal")) {
+        // 获取归一化信息
+        if (picObj.HasMember("normal")) 
+        {
             auto normal = picObj["normal"].GetArray();
             int cur     = 0;
-            for (auto iter = normal.begin(); iter != normal.end(); iter++) {
+            for (auto iter = normal.begin(); iter != normal.end(); iter++) 
+            {
                 _imageProcessConfig.normal[cur++] = iter->GetFloat();
             }
         }
-        if (picObj.HasMember("center_crop_h")) {
+        if (picObj.HasMember("center_crop_h")) 
+        {
             _preprocessConfig.centerCropHeight = picObj["center_crop_h"].GetFloat();
         }
-        if (picObj.HasMember("center_crop_w")) {
+        if (picObj.HasMember("center_crop_w")) 
+        {
             _preprocessConfig.centerCropWidth = picObj["center_crop_w"].GetFloat();
         }
-        if (picObj.HasMember("width")) {
+        if (picObj.HasMember("width")) 
+        {
             _width = picObj["width"].GetInt();
             _preprocessConfig.targetWidth = _width;
         }
-        if (picObj.HasMember("height")) {
+        if (picObj.HasMember("height")) 
+        {
             _height = picObj["height"].GetInt();
             _preprocessConfig.targetHeight = _height;
         }
-        if (picObj.HasMember("batch_size")) {
+        if (picObj.HasMember("batch_size")) 
+        {
             _batch = picObj["batch_size"].GetInt();
         }
-        if (picObj.HasMember("quant_bits")) {
+        if (picObj.HasMember("quant_bits")) 
+        {
             _quant_bits = picObj["quant_bits"].GetInt();
         }
-        if (!picObj.HasMember("path")) {
+        if (!picObj.HasMember("path")) 
+        {
             MNN_ERROR("calibration data path not set in .json config file\n");
             return;
         }
         _calibrationFilePath = picObj["path"].GetString();
-        if (picObj.HasMember("used_image_num")) {
+        if (picObj.HasMember("used_image_num")) 
+        {
             _calibrationFileNum = picObj["used_image_num"].GetInt();
         }
-        if (picObj.HasMember("used_sample_num")) {
+        if (picObj.HasMember("used_sample_num")) 
+        {
             _calibrationFileNum = picObj["used_sample_num"].GetInt();
         }
-        if (picObj.HasMember("feature_quantize_method")) {
+        if (picObj.HasMember("feature_quantize_method")) 
+        {
             std::string method = picObj["feature_quantize_method"].GetString();
-            if (Helper::featureQuantizeMethod.find(method) != Helper::featureQuantizeMethod.end()) {
+            if (Helper::featureQuantizeMethod.find(method) != Helper::featureQuantizeMethod.end()) 
+            {
                 _featureQuantizeMethod = method;
-            } else {
+            } 
+            else 
+            {
                 MNN_ERROR("not supported feature quantization method: %s\n", method.c_str());
                 return;
             }
         }
-        if (picObj.HasMember("weight_quantize_method")) {
+        if (picObj.HasMember("weight_quantize_method")) 
+        {
             std::string method = picObj["weight_quantize_method"].GetString();
-            if (Helper::weightQuantizeMethod.find(method) != Helper::weightQuantizeMethod.end()) {
+            if (Helper::weightQuantizeMethod.find(method) != Helper::weightQuantizeMethod.end()) 
+            {
                 _weightQuantizeMethod = method;
-            } else {
+            } 
+            else 
+            {
                 MNN_ERROR("not supported weight quantization method: %s\n", method.c_str());
                 return;
             }
         }
         DLOG(INFO) << "Use feature quantization method: " << _featureQuantizeMethod;
         DLOG(INFO) << "Use weight quantization method: " << _weightQuantizeMethod;
-        if (picObj.HasMember("feature_clamp_value")) {
+        if (picObj.HasMember("feature_clamp_value")) 
+        {
             float value = (int)picObj["feature_clamp_value"].GetFloat();
-            if (value < 0.0f || value > 127.0f) {
+            if (value < 0.0f || value > 127.0f) 
+            {
                 MNN_ERROR("feature_clamp_value should be in (0, 127], got: %f\n", value);
                 return;
             }
             _featureClampValue = value;
         }
-        if (picObj.HasMember("weight_clamp_value")) {
+        if (picObj.HasMember("weight_clamp_value")) 
+        {
             float value = (int)picObj["weight_clamp_value"].GetFloat();
-            if (value < 0.0f || value > 127.0f) {
+            if (value < 0.0f || value > 127.0f) 
+            {
                 MNN_ERROR("weight_clamp_value should be in (0, 127], got: %f\n", value);
                 return;
             }
             _weightClampValue = value;
-            if (_quant_bits < 8) {
+            if (_quant_bits < 8) 
+            {
                 _weightClampValue = (float)(1 << (_quant_bits - 1)) - 1.0f;
             }
         }
         DLOG(INFO) << "feature_clamp_value: " << _featureClampValue;
         DLOG(INFO) << "weight_clamp_value: " << _weightClampValue;
-        if (picObj.HasMember("winogradOpt") && picObj["winogradOpt"].GetBool() == true) {
-            if (_featureQuantizeMethod == "EMA") {
+        if (picObj.HasMember("winogradOpt") && picObj["winogradOpt"].GetBool() == true) 
+        {
+            if (_featureQuantizeMethod == "EMA") 
+            {
                 _winogradOpt = true;
-            } else {
+            } 
+            else 
+            {
                 DLOG(ERROR) << "winogradOpt only be available under EMA";
             }
         }
-        if (picObj.HasMember("skip_quant_op_names")) {
+        if (picObj.HasMember("skip_quant_op_names")) 
+        {
             auto skip_quant_op_names = picObj["skip_quant_op_names"].GetArray();
-            for (auto iter = skip_quant_op_names.begin(); iter != skip_quant_op_names.end(); iter++) {
+            for (auto iter = skip_quant_op_names.begin(); iter != skip_quant_op_names.end(); iter++) 
+            {
                 std::string skip_quant_op_name = iter->GetString();
                 _skip_quant_ops.emplace_back(skip_quant_op_name);
                 DLOG(INFO) << "skip quant op name: " << skip_quant_op_name;
             }
         }
-        if (picObj.HasMember("debug")) {
+        if (picObj.HasMember("debug")) 
+        {
             _debug = picObj["debug"].GetBool();
         }
         _inputType = Helper::InputType::IMAGE;
-        if (picObj.HasMember("input_type")) {
+        if (picObj.HasMember("input_type")) 
+        {
             std::string type = picObj["input_type"].GetString();
-            if (type == "sequence") {
+            if (type == "sequence") 
+            {
                 _inputType = Helper::InputType::SEQUENCE;
             }
         }
@@ -850,7 +892,8 @@ void Calibration::_computeQuantError() {
 
 void Calibration::_quantizeModelEMA() {
     auto varMap = Variable::loadMap(_originalModelFile.c_str());
-    if (varMap.empty()) {
+    if (varMap.empty()) 
+    {
         MNN_ERROR("Can not load model %s\n", _originalModelFile.c_str());
         return;
     }
@@ -858,7 +901,8 @@ void Calibration::_quantizeModelEMA() {
     auto inputOutputs = Variable::getInputAndOutput(varMap);
     auto inputs       = Variable::mapToSequence(inputOutputs.first);
     auto outputs      = Variable::mapToSequence(inputOutputs.second);
-    if (inputs.size() != 1) {
+    if (inputs.size() != 1) 
+    {
         MNN_ERROR("Only support input size = 1\n");
         return;
     }
@@ -866,7 +910,8 @@ void Calibration::_quantizeModelEMA() {
     auto originFormat = NC4HW4;
     auto originType = halide_type_of<float>();
     std::vector<int> originDims;
-    if (nullptr != originInfo) {
+    if (nullptr != originInfo) 
+    {
         originFormat = originInfo->order;
         originDims = originInfo->dim;
         originType = originInfo->type;
@@ -885,18 +930,21 @@ void Calibration::_quantizeModelEMA() {
 
     DLOG(INFO) << "batch size: " << _batch;
     DLOG(INFO) << "quant bits: " << _quant_bits;
-    if (_calibrationFileNum < _batch) {
+    if (_calibrationFileNum < _batch) 
+    {
         MNN_ERROR("_calibrationFileNum %d < batch size %d, set batch size as %d\n", _calibrationFileNum, _batch, _calibrationFileNum);
         _batch = _calibrationFileNum;
     }
     DataLoader* trainDataLoader = nullptr;
     std::shared_ptr<MNN::Tensor> tempInputTensor = nullptr;
-    if (_inputType == Helper::InputType::IMAGE) {
+    if (_inputType == Helper::InputType::IMAGE) 
+    {
         auto converImagesToFormat = _imageProcessConfig.destFormat;
         int resizeHeight = _preprocessConfig.targetHeight;
         int resizeWidth = _preprocessConfig.targetWidth;
         std::vector<float> means, scales;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) 
+        {
             means.emplace_back(_imageProcessConfig.mean[i]);
             scales.emplace_back(_imageProcessConfig.normal[i]);
         }
@@ -909,7 +957,9 @@ void Calibration::_quantizeModelEMA() {
         const int trainNumWorkers = 0;
         trainDataLoader = trainDataset.createLoader(trainBatchSize, true, false, trainNumWorkers);
         trainDataLoader->reset();
-    } else {
+    } 
+    else 
+    {
         flatbuffers::FlatBufferBuilder builder(1024);
         auto offset = MNN::Net::Pack(builder, _originalModel);
         builder.Finish(offset);
@@ -930,15 +980,21 @@ void Calibration::_quantizeModelEMA() {
     exe->gc(Executor::FULL);
 
     model->setIsTraining(true);
-    for (int i = 0; i < trainIterations; i++) {
+    for (int i = 0; i < trainIterations; i++) 
+    {
         VARP input;
-        if (_inputType == Helper::InputType::IMAGE) {
+        if (_inputType == Helper::InputType::IMAGE) 
+        {
             auto trainData  = trainDataLoader->next();
             auto example    = trainData[0];
             input = example.first[0];
-        } else {
-            for (auto& file : _calibrationFiles) {
-                for (int j = 0; j < _batch; j++) {
+        } 
+        else 
+        {
+            for (auto& file : _calibrationFiles) 
+            {
+                for (int j = 0; j < _batch; j++) 
+                {
                     auto curPtr = tempInputTensor->host<float>() + j * tempInputTensor->stride(0);
                     std::shared_ptr<MNN::Tensor> tensorWarp(MNN::Tensor::create({1, _channels, _height}, _inputTensor->getType(), curPtr, MNN::Tensor::CAFFE), MNN::Tensor::destroy);
                     Helper::preprocessInput(_process.get(), _preprocessConfig, file, tensorWarp.get(), _inputType);
@@ -946,13 +1002,15 @@ void Calibration::_quantizeModelEMA() {
                 input = _Input({_batch, _channels, _height}, MNN::Express::Dimensionformat::NCHW, halide_type_of<float>());
                 auto inputPtr = input->writeMap<float>();
                 auto tempInputPtr = tempInputTensor->host<float>();
-                for (int j = 0; j < _batch * _channels * _height; j++) {
+                for (int j = 0; j < _batch * _channels * _height; j++) 
+                {
                     inputPtr[j] = tempInputPtr[j];
                 }
             }
         }
         auto predicts = model->onForward({_Convert(input, originFormat)});
-        for (auto& output : predicts) {
+        for (auto& output : predicts) 
+        {
             auto ptr = output->readMap<float>();
         }
         MNN_PRINT("\rquantize with EMA: %.2lf %%", (i + 1) * 100.0f / trainIterations);
@@ -964,19 +1022,26 @@ void Calibration::_quantizeModelEMA() {
     model->setIsTraining(false);
     exe->gc(Executor::PART);
     VARP forwardInput = nullptr;
-    if (originInfo != nullptr && originDims.size() > 0) {
+    if (originInfo != nullptr && originDims.size() > 0) 
+    {
         forwardInput = _Input(originDims, originFormat, originType);
-    } else {
-        if (_inputType == Helper::InputType::IMAGE) {
+    } 
+    else 
+    {
+        if (_inputType == Helper::InputType::IMAGE) 
+        {
             forwardInput = _Input({1, _channels, _preprocessConfig.targetHeight, _preprocessConfig.targetWidth}, NC4HW4);
-        } else {
+        } 
+        else 
+        {
             forwardInput = _Input({1, _channels, _height}, NC4HW4);
         }
     }
     forwardInput->setName(inputs[0]->name());
     auto predicts = model->onForward({forwardInput});
     Transformer::turnModelToInfer()->onExecute(predicts);
-    for (int i = 0; i < predicts.size(); i++) {
+    for (int i = 0; i < predicts.size(); i++) 
+    {
         predicts[i]->setName(outputs[i]->name());
     }
     Variable::save(predicts, _destModelFile.c_str());
@@ -1001,14 +1066,18 @@ void Calibration::_quantizeModelEMA() {
 }
 
 void Calibration::runQuantizeModel() {
-    if (_featureQuantizeMethod == "EMA") {
+    if (_featureQuantizeMethod == "EMA") 
+    {
         _quantizeModelEMA();
         return;
     }
 
-    if (_featureQuantizeMethod == "KL") {
+    if (_featureQuantizeMethod == "KL") 
+    {
         _computeFeatureScaleKL();
-    } else if (_featureQuantizeMethod == "ADMM") {
+    } 
+    else if (_featureQuantizeMethod == "ADMM") 
+    {
         _computeFeatureScaleADMM();
     }
     if (_debug) {
@@ -1267,23 +1336,29 @@ void Calibration::ComputeUnaryBuffer(MNN::NetT* net) {
     }
 }
 
-int quant_main(int argc, const char* argv[]) {
-    if (argc < 4) {
+int quant_main(int argc, const char* argv[]) 
+{
+    // 参数检查
+    if (argc < 4) 
+    {
         DLOG(INFO) << "Usage: ./quantized.out src.mnn dst.mnn preTreatConfig.json\n";
         return 0;
     }
-    const char* modelFile      = argv[1];
-    const char* preTreatConfig = argv[3];
-    const char* dstFile        = argv[2];
+    const char* modelFile      = argv[1]; // 原始文件路径
+    const char* preTreatConfig = argv[3]; // 量化配置
+    const char* dstFile        = argv[2]; // 输出模型路径
     DLOG(INFO) << ">>> modelFile: " << modelFile;
     DLOG(INFO) << ">>> preTreatConfig: " << preTreatConfig;
     DLOG(INFO) << ">>> dstFile: " << dstFile;
     std::unique_ptr<MNN::NetT> netT;
     {
+        // 创建mnn模型
         std::shared_ptr<MNN::Interpreter> interp(MNN::Interpreter::createFromFile(modelFile), MNN::Interpreter::destroy);
-        if (nullptr == interp.get()) {
+        if (nullptr == interp.get()) 
+        {
             return 0;
         }
+        // 解析并加载已序列化的模型数据，以便在运行时进行推理。
         netT = MNN::UnPackNet(interp->getModelBuffer().first);
     }
 
@@ -1305,12 +1380,15 @@ int quant_main(int argc, const char* argv[]) {
     netT = MNN::UnPackNet(modelOriginal.get());
 
     // quantize model's weight
+    // 校准特征并量化模型
     DLOG(INFO) << "Calibrate the feature and quantize model...";
     std::shared_ptr<Calibration> calibration(
         new Calibration(netT.get(), modelForInference.get(), size, preTreatConfig, std::string(modelFile), std::string(dstFile)));
-    if (!calibration->valid()) {
+    if (!calibration->valid()) 
+    {
         return 0;
     }
+
     calibration->runQuantizeModel();
     calibration->dumpTensorScales(dstFile);
     DLOG(INFO) << "Quantize model done!";

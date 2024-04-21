@@ -55,3 +55,5 @@
     $ python pymnn/examples/MNNQuant/test_mnn_offline_quant.py --mnn_model ../../models/mobilenet_v1.mnn --quant_imgs ../../../../../../Desktop/coco/val2017 --quant_model ./mobilenet_v1_quant.mnn
 
     $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py ../../models/mobilenet_v1_quant.mnn ../../models/ILSVRC2012_val_00049999.JPEG
+
+    $ ./quantized.out ../../../studyML/05-mnn/models/mobilenet_v1.mnn   ./model_quan.mnn   ../../../studyML/05-mnn/models/imageInputConfig.json
