@@ -11,15 +11,16 @@ int main(int argc, char **argv)
 {
 	/* 参数解析 */
 	cmdline::parser cmd;
-  	cmd.add<std::string>("model_name", 'm', "model name", false, "../models/symbol_10_320_20L_5scales_v2_deploy.mnn");
-  	cmd.add<std::string>("data_name", 'd', "data name", false, "../data/640.jpeg");
-  	cmd.add<std::string>("run_mode", 'r', "run mode[offline/online]", true, "offline", cmdline::oneof<std::string>("offline", "online"));
-  	cmd.add<int>("scale_num", 's', "scale num[5/8]", false, 5, cmdline::oneof<int>(5, 8));
+	cmd.add<std::string>("model_name", 'm', "model name", false, "../models/symbol_10_320_20L_5scales_v2_deploy.mnn");
+	cmd.add<std::string>("data_name", 'd', "data name", false, "../data/640.jpeg");
+	cmd.add<std::string>("run_mode", 'r', "run mode[offline/online]", true, "offline", cmdline::oneof<std::string>("offline", "online"));
+	cmd.add<int>("scale_num", 's', "scale num[5/8]", false, 5, cmdline::oneof<int>(5, 8));
 	cmd.add("help", 'h', "help info");
-	bool ok=cmd.parse(argc, argv);
+	bool ok = cmd.parse(argc, argv);
 	if (!ok)
 	{
-		std::cout << cmd.error() << std::endl << cmd.usage();
+		std::cout << cmd.error() << std::endl
+				  << cmd.usage();
 		return 0;
 	}
 
@@ -71,10 +72,9 @@ int main(int argc, char **argv)
 				FaceInfo facebox = finalBox[i];
 				cv::Rect box = cv::Rect(facebox.x0, facebox.y0, facebox.x1 - facebox.x0, facebox.y1 - facebox.y0);
 				cv::rectangle(image, box, cv::Scalar(255, 0, 21), 2);
-				cv::putText(image, std::to_string(facebox.score), Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1);
+				cv::putText(image, std::to_string(facebox.score), Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1);
 			}
-			
- 
+
 			cv::namedWindow("MNN", WINDOW_NORMAL);
 			cv::imshow("MNN", image);
 			cv::waitKey(1);

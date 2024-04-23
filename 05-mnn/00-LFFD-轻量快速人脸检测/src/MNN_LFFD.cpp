@@ -134,6 +134,7 @@ int LFFD::detect(cv::Mat &img, std::vector<FaceInfo> &face_list, int resize_h, i
 
 	for (int i = 0; i < face_list.size(); i++)
 	{
+
 		/* 根据图像预处理时resize比率, 将其还原 */
 		face_list[i].x0 *= ratio_w;
 		face_list[i].y0 *= ratio_h;
@@ -188,7 +189,6 @@ void LFFD::generateBBox(std::vector<FaceInfo> &bbox_collection, MNN::Tensor *ten
 		}
 	}
 
-
 	/* 结合anchor box信息, 根据网络回归分支预测的偏移量, 计算每个预测框的位置 */
 	float x1_mat[out_tensor_h * out_tensor_w];
 	float y1_mat[out_tensor_h * out_tensor_w];
@@ -221,7 +221,6 @@ void LFFD::generateBBox(std::vector<FaceInfo> &bbox_collection, MNN::Tensor *ten
 		float y1 = RF_cy_mat[j] - box_map_ptr[3 * fea_spacial_size + j] * constant_[scale_id];
 		y2_mat[j] = y1 > img_h - 1 ? img_h - 1 : y1;
 	}
-
 
 	/* 根据预测分支的得分, 过滤得分过低的box */
 	float *score_map_ptr = tensor_score->host<float>();
