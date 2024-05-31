@@ -1,3 +1,5 @@
+// clang++ -std=c++11 -framework OpenCL ./00-demo.cpp -o demo
+
 #include <stdio.h>
 #ifdef __APPLE__
 #include <OpenCL/opencl.h>
