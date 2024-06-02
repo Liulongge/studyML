@@ -57,3 +57,49 @@
     $ python .//pymnn/examples/MNNExpr/mobilenet_demo.py ../../models/mobilenet_v1_quant.mnn ../../models/ILSVRC2012_val_00049999.JPEG
 
     $ ./quantized.out ../../../studyML/05-mnn/models/mobilenet_v1.mnn   ./model_quan.mnn   ../../../studyML/05-mnn/models/imageInputConfig.json
+
+## benchmark
+### yolov8n
+    metal:
+        [ - ] yolov8n.mnn                 max =   13.801 ms  min =   12.322 ms  avg =   12.843 ms
+        [ - ] yolov8n.mnn                 max =   15.707 ms  min =   13.392 ms  avg =   14.354 ms
+        [ - ] yolov8n.mnn                 max =   13.078 ms  min =   11.953 ms  avg =   12.285 ms
+        [ - ] yolov8n.mnn                 max =   14.989 ms  min =   13.596 ms  avg =   14.137 ms
+    opencl:
+        total kernel time = 439  us, conv time = 0 us, while time = 1 us
+        kernel time = 1    us outputFormatTransform
+        total kernel time = 440  us, conv time = 0 us, while time = 0 us
+        copyFromDevice, 773, cost time: 0.382000 ms
+        [ - ] yolov8n.mnn                 max =   32.706 ms  min =   31.747 ms  avg =   32.072 ms
+
+        total kernel time = 433  us, conv time = 0 us, while time = 1 us
+        kernel time = 2    us outputFormatTransform
+        total kernel time = 435  us, conv time = 0 us, while time = 0 us
+        copyFromDevice, 773, cost time: 0.442000 ms
+        [ - ] yolov8n.mnn                 max =   32.609 ms  min =   31.684 ms  avg =   32.252 ms
+
+        total kernel time = 447  us, conv time = 0 us, while time = 1 us
+        kernel time = 1    us outputFormatTransform
+        total kernel time = 448  us, conv time = 0 us, while time = 0 us
+        copyFromDevice, 773, cost time: 0.380000 ms
+        [ - ] yolov8n.mnn                 max =   32.598 ms  min =   31.628 ms  avg =   32.279 ms
+
+### yolov8s
+    metal:
+        [ - ] yolov8s.mnn                 max =   31.506 ms  min =   29.855 ms  avg =   31.038 ms
+        [ - ] yolov8s.mnn                 max =   32.434 ms  min =   29.683 ms  avg =   31.653 ms
+        [ - ] yolov8s.mnn                 max =   32.013 ms  min =   30.671 ms  avg =   31.577 ms
+    opencl:
+        total kernel time = 982  us, conv time = 0 us, while time = 1 us
+        kernel time = 1    us outputFormatTransform
+        total kernel time = 983  us, conv time = 0 us, while time = 0 us
+        copyFromDevice, 773, cost time: 0.403000 ms
+        [ - ] yolov8s.mnn                 max =   63.790 ms  min =   58.906 ms  avg =   60.852 ms
+
+        total kernel time = 942  us, conv time = 0 us, while time = 1 us
+        kernel time = 1    us outputFormatTransform
+        total kernel time = 943  us, conv time = 0 us, while time = 0 us
+        copyFromDevice, 773, cost time: 0.419000 ms
+        [ - ] yolov8s.mnn                 max =   62.201 ms  min =   57.954 ms  avg =   60.528 ms
+
+        
