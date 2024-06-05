@@ -156,5 +156,8 @@
 // 分配足够的内存来存储源代码  
 // char *source = (char *)malloc(source_size_ret);  
 // 获取源代码  
-// err = clGetProgramInfo(program, CL_PROGRAM_SOURCE, source_size_ret, source, NULL);  
+// err = clGetProgramInfo(program, CL_PROGRAM_SOURCE, source_size_ret, source, NULL); 
+
+// cl_int clRetainProgram(cl_program program) 增加程序对象引用计数 +1
+// cl_int clRecleaseProgram(cl_program program) 减少程序对象引用计数 -1
 
