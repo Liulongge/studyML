@@ -80,7 +80,7 @@ int main(void)
     error = clGetPlatformIDs(1, &platform, NULL);                           // 获取平台id
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL); // 获取设备id
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &error);        // 创建上下文
-    cmd_queue = clCreateCommandQueue(context, device, NULL, &error);        // 创建命令队列
+    cmd_queue = clCreateCommandQueue(context, device, 0, &error);        // 创建命令队列
 
     const char *file_names[] = {"../rgb2gray.cl"}; // 待编译的内核文件
     const int NUMBER_OF_FILES = 1;
@@ -115,10 +115,13 @@ int main(void)
     error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &mem_img_w);
 
     size_t localThreads[2] = {32, 4}; // 工作组中工作项的排布
+    // 计算方式：通常，你需要确保全局工作大小能够完全覆盖你的数据，并且适当地划分为局部工作组。
+    // 例如，如果你的图像宽度是1024像素，而你选择的局部工作组大小是32，那么全局工作大小的宽度就应该是1024，这样可以刚好分成32个工作组（1024 / 32 = 32）。
+    // (w + 31) / 32 * 32
+    // (h + 3) / 4 * 4
     size_t globalThreads[2] = {((src_img_w + localThreads[0] - 1) / localThreads[0]) * localThreads[0],
-                               ((src_img_h + localThreads[1] - 1) / localThreads[1]) * localThreads[1]}; // 整体排布
+                               ((src_img_h + localThreads[1] - 1) / localThreads[1]) * localThreads[1]}; // 确保全局工作组完全
 
-    
     uint64_t start_time = getTimeUs();
     cl_event evt;
     error = clEnqueueNDRangeKernel(cmd_queue, kernel, // 启动内核
