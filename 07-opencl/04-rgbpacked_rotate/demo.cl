@@ -48,11 +48,12 @@
 // }
 
 // 180度旋转
-__kernel void rotate90(__global const unsigned char *input_image, 
+__kernel void rotate180(__global const unsigned char *input_image, 
                        __global unsigned char *output_image,
                        __global const unsigned int *p_height, 
                        __global const unsigned int *p_width)
 {
+    printf("Thread %d: Data value = %d\n", *p_height, *p_width);
     int x = get_global_id(0);
     int y = get_global_id(1);
     int height = *p_height;

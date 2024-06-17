@@ -67,6 +67,10 @@ int main(void)
     int src_img_w = 658;
     int src_img_h = 494;
     int src_img_c = 3;
+    int dst_w = (int)(src_img_w / 2);
+    int dst_h = (int)(src_img_h / 2);
+    int dst_c = src_img_c;
+
     auto src_image = stbi_load(src_img_path.c_str(), &src_img_w, &src_img_h, &src_img_c, 0);
     if (nullptr == src_image)
     {
@@ -75,7 +79,7 @@ int main(void)
     }
 
     /* 申请输出图像内存 */
-    void *dst_image = malloc(src_img_w * src_img_h * src_img_c);
+    void *dst_image = malloc(dst_w * dst_h * dst_c);
 
     error = clGetPlatformIDs(1, &platform, NULL);                           // 获取平台id
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL); // 获取设备id
@@ -105,14 +109,19 @@ int main(void)
     error = clCreateKernelsInProgram(program, 1, &kernel, NULL); // 创建内核
     // 创建缓存对象
     cl_mem mem_src_img = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, src_img_c * src_img_h * src_img_w, src_image, &error); // CL_MEM_COPY_HOST_PTR指定创建缓存对象后拷贝数据
-    cl_mem mem_dst_img = clCreateBuffer(context, CL_MEM_WRITE_ONLY, src_img_c * src_img_h * src_img_w, NULL, &error);
-    cl_mem mem_img_h = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &src_img_h, &error);
-    cl_mem mem_img_w = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &src_img_w, &error);
+    cl_mem mem_dst_img = clCreateBuffer(context, CL_MEM_WRITE_ONLY, dst_c * dst_h * dst_w, NULL, &error);
+    cl_mem mem_src_w = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &src_img_w, &error);
+    cl_mem mem_src_h = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &src_img_h, &error);
+    cl_mem mem_dst_w = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &dst_w, &error);
+    cl_mem mem_dst_h = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &dst_h, &error);
     // 向内核函数传递参数
-    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), &mem_src_img);
-    error = clSetKernelArg(kernel, 1, sizeof(cl_mem), &mem_dst_img);
-    error = clSetKernelArg(kernel, 2, sizeof(cl_mem), &mem_img_h);
-    error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &mem_img_w);
+
+    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&mem_src_img);
+    error |= clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&mem_dst_img);
+    error |= clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&mem_src_w);
+    error |= clSetKernelArg(kernel, 3, sizeof(cl_mem), (void *)&mem_src_h);
+    error |= clSetKernelArg(kernel, 4, sizeof(cl_mem), (void *)&mem_dst_w);
+    error |= clSetKernelArg(kernel, 5, sizeof(cl_mem), (void *)&mem_dst_h); 
 
     size_t localThreads[2] = {32, 4}; // 工作组中工作项的排布
     // 计算方式：通常，你需要确保全局工作大小能够完全覆盖你的数据，并且适当地划分为局部工作组。
@@ -130,25 +139,23 @@ int main(void)
     clWaitForEvents(1, &evt);                      // 等待命令事件发生
     clReleaseEvent(evt);
     // 读回数据
-    error = clEnqueueReadBuffer(cmd_queue, mem_dst_img, CL_TRUE, 0, src_img_c * src_img_h * src_img_w, dst_image, 0, NULL, NULL);
+    error = clEnqueueReadBuffer(cmd_queue, mem_dst_img, CL_TRUE, 0, dst_c * dst_h * dst_w, dst_image, 0, NULL, NULL);
     uint64_t end_time = getTimeUs();
     printf("cost: %d\n", end_time - start_time);
 
     // 释放资源
     clReleaseMemObject(mem_src_img);
     clReleaseMemObject(mem_dst_img);
-    clReleaseMemObject(mem_img_h);
-    clReleaseMemObject(mem_img_w);
+    clReleaseMemObject(mem_dst_w);
+    clReleaseMemObject(mem_dst_h);
+    clReleaseMemObject(mem_src_w);
+    clReleaseMemObject(mem_src_h);
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(cmd_queue);
     clReleaseContext(context);
 
-    // 180度旋转 
-    int success = stbi_write_png("../data/output.png", src_img_w, src_img_h, src_img_c, dst_image, src_img_w * src_img_c);
-  
-    // +-90度旋转  
-    // int success = stbi_write_png("../data/output.png", src_img_h, src_img_w, src_img_c, dst_image, src_img_h * src_img_c);
+    int success = stbi_write_png("../data/output.png", dst_w, dst_h, dst_c, dst_image, dst_w * dst_c);
     if (success != 0)
     {
         printf("Successfully saved PNG image.\n");
