@@ -91,5 +91,18 @@
       2. 尝试TensorRT自带的Plugin是否满足要求
       3. 还是不满意，自己写
 
+
+[全面探究英伟达GPU SM内CUDA core-Tensor core能否同时计算？(上篇)](https://zhuanlan.zhihu.co/p/697000619)
+[全面探究GPU SM内CUDA core-Tensor core能否同时计算？(下篇)](https://zhuanlan.zhihu.com/p/698572611)
+
+![gpu演进](./docs/gpu演进.jpg)
+![cuda core与tensor core](./docs/cuda%20core与tensor%20core.jpg)
+![](./docs/cuda%20core、tensor%20core与dla.jpg)
+# CUDA Core/Tensor Core/RT Core
+## CUDA Core
+
+
+#
 # 参考
-    https://www.bilibili.com/video/BV15Y4y1W73E/?spm_id_from=333.999.0.0&vd_source=6b48595092f05a0fc1d129f83872951f
+   https://www.bilibili.com/video/BV15Y4y1W73E/?spm_id_from=333.999.0.0&vd_source=6b48595092f05a0fc1d129f83872951f
+   [gpu database(查询gpu参数)](https://www.techpowerup.com/gpu-specs/)
